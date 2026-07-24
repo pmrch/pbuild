@@ -10,21 +10,24 @@
 
 
 static i32 verify_arguments(const char *restrict const *argv, const i32 argc) {
-    char **invalid_flags = malloc((usize)argc * sizeof(argv[0]));
+    const char **invalid_flags = malloc((usize)argc * sizeof(argv[0]));
     if (invalid_flags == NULL) {
         LOG_ERROR("Failed to allocate memory for ");
         return -1;
     }
 
+    i32 invalid_counter = 0;
     for (i32 i = 0; i < argc; i++) {
         const char *arg = argv[i];
         
-        if (arg[0] != '-' ) {
-
+        if (!(arg[0] == '-' && arg[0] == '-')) {
+            *invalid_flags++ = arg;
+            ++invalid_counter;
         }
     }
 
-    return 0;
+    free(invalid_flags);
+    return invalid_counter;
 }
 
 i32 main(i32 argc, const char **argv) {

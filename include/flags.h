@@ -1,3 +1,4 @@
+#include "config.h"
 #include "parser.h"
 #include "utils.h"
 
@@ -66,4 +67,4 @@
 
 Strictness validate_strictness(const char *level_str);
 const char* delegate_strictness_flags(const Strictness level);
-const char* join_cflags(const CompilerOptions *opts);
+const char* join_cflags(const CompilerOptions opts, const CompilerConfig cfg);

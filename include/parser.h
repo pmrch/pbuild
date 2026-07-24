@@ -23,5 +23,6 @@ typedef struct {
 } CompilerOptions;
 
 CompilerOptions* parse_compiler_flags(const int argc, const char **argv);
+Compiler pair_compiler(const char *compiler);
 
 #endif

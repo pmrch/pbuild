@@ -19,6 +19,7 @@ static void cleanup_test() {
 }
 
 static char* get_latest_std(const char *cc) {
+    if (cc == NULL) { return NULL; }
     if (create_test_file() != 0) {
         return strdup_cross("c99");
     }
@@ -79,10 +80,15 @@ CompilerConfig* new_config(const char *project_name) {
     cfg_base->link = "link.exe";
 
     #else
-    const char *compiler = system("gcc --version >/dev/null 2>&1") == 0 ? "gcc" : "clang";
-    char *std = get_latest_std(compiler);
+    i32 gnu_version_works = system("gcc --version >/dev/null 2>&1") == 0 && system("g++ --version >/dev/null 2>&1") == 0;
+    i32 clang_version_works = system("clang --version >/dev/null 2>&1") == 0 && system("clang++ --version >/dev/null 2>&1") == 0;
 
-    cfg_base->std = std ? std : "c99";
+    const char *compiler = gnu_version_works == 0 ? "gcc" 
+        : clang_version_works ? "clang" : NULL;
+
+    char *std = get_latest_std(compiler);
+    cfg_base->std = std != NULL ? std : "c99";
+
     cfg_base->cc = compiler;
     cfg_base->link = compiler;
     #endif

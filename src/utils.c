@@ -104,7 +104,12 @@ i32 strcat_cross(char *restrict dest, usize dest_size, const char *restrict src)
     return (i32)result;
 
     #else
-    (void)dest_size;
+    const usize final_size = strlen(dest) + strlen(src) + 1;
+    if (final_size > dest_size) {
+        LOG_ERROR("Target buffer was too small for string catenation (%zu bytes < %zu bytes)", dest_size, final_size);
+        return -1;
+    }
+    
     strcat(dest, src);
     return 0;
 

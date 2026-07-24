@@ -13,18 +13,7 @@
 
 #define COMPILER_FLAGS_SIZE 2048
 
-static bool is_compiler_valid(const char *str) {
-    const char* const valid_compilers[] = { "gcc", "clang", "cl", "g++", "clang++" };
-    for (usize i = 0; i < sizeof(valid_compilers) / sizeof(valid_compilers[0]); i++) {
-        if (strncmp(str, valid_compilers[i], strlen(valid_compilers[i])) == 0) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-static Compiler pair_compiler(const char *compiler) {
+Compiler pair_compiler(const char *compiler) {
     if (strcmp(compiler, "gcc") == 0) { return (Compiler){ .cc="gcc", .cxx="g++" }; }
     if (strcmp(compiler, "clang") == 0) { return (Compiler){ .cc="clang", .cxx="clang++" }; }
     if (strcmp(compiler, "cl") == 0) { return (Compiler){ .cc="cl.exe", .cxx="cl.exe" }; }
@@ -34,6 +23,17 @@ static Compiler pair_compiler(const char *compiler) {
 
     LOG_WARN("Compiler was not defined! Returning empty strings");
     return (Compiler){ .cc="", .cxx="" };
+}
+
+static bool is_compiler_valid(const char *str) {
+    const char* const valid_compilers[] = { "gcc", "clang", "cl", "g++", "clang++" };
+    for (usize i = 0; i < sizeof(valid_compilers) / sizeof(valid_compilers[0]); i++) {
+        if (strncmp(str, valid_compilers[i], strlen(valid_compilers[i])) == 0) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 static void set_strictness(char *restrict strictness, CompilerOptions *opts) {
@@ -119,14 +119,14 @@ CompilerOptions* parse_compiler_flags(const int argc, const char **argv) {
         return NULL;
     }
 
-    char **argv_p = clone_string_array_mutable(argv, (usize)argc);
-    if (argv_p == NULL) {
+    char **argv_clone = clone_string_array_mutable(argv, (usize)argc);
+    if (argv_clone == NULL) {
         free(opts);
         return NULL;
     }
 
-    // Preserve the start of the pointer for when it has to be free()'d
-    char **argv_start = argv_p;
+    // Create a pointer to travel through the origin pointer
+    char **argv_p = argv_clone;
 
     // Pre-increment to skip first argument which is the executable name itself
     while (*++argv_p != NULL) {
@@ -163,7 +163,7 @@ CompilerOptions* parse_compiler_flags(const int argc, const char **argv) {
         }
     };
 
-    free_mutable_cloned_string_array(argv_start);
+    free_mutable_cloned_string_array(argv_clone);
     LOG_INFO("We got %d args", argc);
     return opts;
 }
