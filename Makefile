@@ -5,7 +5,7 @@ CC = gcc
 # -Werror: Turn warnings into errors
 # -Wpedantic: Reject everything that isn't ISO C
 # -Wextra: The "extra" warnings often missed by -Wall
-STRICT_FLAGS = -Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wmaybe-uninitialized \
+STRICT_FLAGS_GCC = -Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wmaybe-uninitialized \
 	-Wconversion -Wsign-conversion -Wcast-align -Wcast-qual -Wstrict-aliasing=2 -Wpointer-arith \
 	-Warray-bounds -Wnull-dereference -Wmissing-prototypes -Wstrict-prototypes \
 	-Wold-style-definition -Wredundant-decls -Wshadow -Wundef -Wformat=2 -Wformat-security \
@@ -13,8 +13,16 @@ STRICT_FLAGS = -Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wmaybe-uninitia
 	-Wunused -Wunused-function -Wunused-variable -Wunused-parameter -Wduplicated-cond \
 	-Wduplicated-branches -Wlogical-op -Wno-padded -Wno-declaration-after-statement 
 
+STRICT_FLAGS_CLANG = -Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wold-style-definition          \
+	-Wsign-conversion -Wcast-align -Wcast-qual -Wstrict-aliasing=2 -Wpointer-arith -Warray-bounds      \
+	-Wnull-dereference -Wmissing-prototypes -Wstrict-prototypes -Wconversion -Wredundant-decls -Wvla   \
+	-Wshadow -Wundef -Wformat=2 -Wformat-security -Wwrite-strings -Wdouble-promotion -Wfloat-equal     \
+	-Wswitch-enum -Wswitch-default -Wunused -Wunused-function -Wunused-variable -Wunused-parameter     \
+	-Wno-padded -Wno-declaration-after-statement -Weverything -Wno-jump-misses-init -Wno-unsafe-buffer-usage \
+	-Wno-disabled-macro-expansion -Wno-unknown-warning-option
+
 # Combine with standard flags and optimization
-CFLAGS = -std=c23 $(STRICT_FLAGS) -Iinclude -MMD -MP -flto -ffast-math -O3 -march=native
+CFLAGS = -std=c23 $(STRICT_FLAGS_GCC) -Iinclude -MMD -MP -O3 -march=native -flto -ffast-math
 
 # Linker flags (for libraries)
 LDFLAGS = -flto

@@ -17,17 +17,17 @@ typedef uint32_t u32;
 typedef int32_t  i32;
 typedef size_t usize;
 
-typedef enum : u8 {
+typedef enum {
     C   = 0,
     Cpp = 1,
 } Lang;
 
-typedef enum : u8 {
+typedef enum {
     Debug   = 0,
     Release = 1
 } Config;
 
-typedef enum : u8 {
+typedef enum {
     Lazy     = 0,
     Lint     = 1,
     Moderate = 2,

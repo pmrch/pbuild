@@ -11,8 +11,6 @@
 #include "path.h"
 #include "log.h"
 
-#define COMPILER_FLAGS_SIZE 2048
-
 Compiler pair_compiler(const char *compiler) {
     if (strcmp(compiler, "gcc") == 0) { return (Compiler){ .cc="gcc", .cxx="g++" }; }
     if (strcmp(compiler, "clang") == 0) { return (Compiler){ .cc="clang", .cxx="clang++" }; }
@@ -21,7 +19,7 @@ Compiler pair_compiler(const char *compiler) {
     if (strcmp(compiler, "clang++") == 0) { return (Compiler){ .cc="clang", .cxx="clang++" }; }
     if (strcmp(compiler, "g++") == 0) { return (Compiler){ .cc="gcc", .cxx="g++" }; }
 
-    LOG_WARN("Compiler was not defined! Returning empty strings");
+    LOG_WARN("%s", "Compiler was not defined! Returning empty strings");
     return (Compiler){ .cc="", .cxx="" };
 }
 
@@ -87,7 +85,7 @@ static void set_lang(char *restrict lang, CompilerOptions *opts) {
     if (is_cpp) { opts->lang = Cpp; }
     else if (is_c) { opts->lang = C; }
     else {
-        LOG_WARN("Neither C nor C++ was provided in any accepted form, defaulting to C");
+        LOG_WARN("%s", "Neither C nor C++ was provided in any accepted form, defaulting to C");
         opts->lang = C;
     }
 
@@ -113,9 +111,9 @@ static void set_mimalloc(char *restrict path, CompilerOptions *opts) {
 }
 
 CompilerOptions* parse_compiler_flags(const int argc, const char **argv) {
-    CompilerOptions *opts = calloc(1, sizeof(CompilerOptions));
+    CompilerOptions *opts = (CompilerOptions*)calloc(1, sizeof(CompilerOptions));
     if (opts == NULL) {
-        LOG_ERROR("Failed to allocate memory for CompilerOptions!");
+        LOG_ERROR("%s", "Failed to allocate memory for CompilerOptions!");
         return NULL;
     }
 
@@ -161,7 +159,7 @@ CompilerOptions* parse_compiler_flags(const int argc, const char **argv) {
         if (strncmp(*argv_p, "--lang=", 7) == 0 && !opts->lang_set) {
             set_lang(value, opts);
         }
-    };
+    }
 
     free_mutable_cloned_string_array(argv_clone);
     LOG_INFO("We got %d args", argc);

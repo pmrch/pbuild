@@ -73,9 +73,9 @@ char *strdup_cross(const char *str) {
 }
 
 char** clone_string_array_mutable(const char **arr, usize num_elem) {
-    char **mutable_arr = malloc((num_elem + 1) * sizeof(char*));
+    char **mutable_arr = (char**)malloc((num_elem + 1) * sizeof(char*));
     if (mutable_arr == NULL) {
-        LOG_ERROR("Failed to allocate memory for the copy of the array!");
+        LOG_ERROR("%s", "Failed to allocate memory for the copy of the array!");
         return NULL;
     }
 
@@ -143,7 +143,7 @@ i32 create_test_file() {
 // If a sequence of whitespace is found, they get reduced to a singular whitespace
 void normalize_whitespaces(char *restrict s) {
     if (s == NULL || *s == '\0') {
-        LOG_WARN("Not normalizing whitespaces, passed NULL or empty string");
+        LOG_WARN("%s", "Not normalizing whitespaces, passed NULL or empty string");
         return;
     }
 
@@ -169,7 +169,7 @@ void normalize_whitespaces(char *restrict s) {
 
 void to_lowercase(char *restrict str) {
     if (str == NULL || *str == '\0') {
-        LOG_WARN("Cannot convert string to lowercase, NULL or empty string was passed");
+        LOG_WARN("%s", "Cannot convert string to lowercase, NULL or empty string was passed");
         return;
     }
 
@@ -181,7 +181,7 @@ void to_lowercase(char *restrict str) {
 
 void strip_quotes(char *restrict str) {
     if (str == NULL || *str == '\0') {
-        LOG_WARN("Not removing double quotes, passed NULL or empty string");
+        LOG_WARN("%s", "Not removing double quotes, passed NULL or empty string");
         return;
     }
 

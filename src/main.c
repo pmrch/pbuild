@@ -3,50 +3,76 @@
 
 #include "log.h"
 #include "path.h"
-#include "build.h"
+#include "flags.h"
 #include "utils.h"
 #include "config.h"
 #include "parser.h"
 
 
 static i32 verify_arguments(const char *restrict const *argv, const i32 argc) {
-    const char **invalid_flags = malloc((usize)argc * sizeof(argv[0]));
+    LOG_DEBUG("Verifying command line arguments, found %d args", argc - 1);
+
+    usize buf_size = (usize)argc * sizeof(argv[0]);
+    const char **invalid_flags = (const char**)malloc(buf_size);
+    LOG_VERBOSE("Allocated %zu bytes for invalid flags at %p", buf_size, (void*)invalid_flags);
+
     if (invalid_flags == NULL) {
-        LOG_ERROR("Failed to allocate memory for ");
+        LOG_ERROR("%s", "Failed to allocate memory for");
         return -1;
     }
 
     i32 invalid_counter = 0;
+    const char **invalid_flags_p = invalid_flags;
+    
     for (i32 i = 0; i < argc; i++) {
         const char *arg = argv[i];
         
-        if (!(arg[0] == '-' && arg[0] == '-')) {
-            *invalid_flags++ = arg;
+        if (!(arg[0] == '-' && arg[1] == '-')) {
+            *invalid_flags_p++ = arg;
             ++invalid_counter;
         }
     }
 
+    LOG_VERBOSE("Freeing invalid flags buffer at <%p>", (void*)invalid_flags);
     free(invalid_flags);
+
+    LOG_DEBUG("%s", "Freed internal buffers for argument validation");
     return invalid_counter;
 }
 
 i32 main(i32 argc, const char **argv) {
+    fprintf(stderr, "Current log level: %d\n", LOG_LEVEL);
     CompilerConfig *cfg = new_config("compile_project");
     if (cfg == NULL) { return -1; }
 
     char *cwd = get_cwd();
-    if (cwd == NULL) { goto cleanup; return -1; }
-    if (verify_arguments(argv, argc) != 0) { goto cleanup; }
+    LOG_DEBUG("Got current working directory <%s>", cwd);
+    LOG_VERBOSE("Current working directory is at: <%p>", (void*)cwd);
 
-    ya();
+    if (verify_arguments(argv, argc) != 0) { goto cleanup; }
     CompilerOptions *opts = parse_compiler_flags(argc, argv);
-    printf("Set lang: %d | Set compiler: %d | Set config: %d | Set trictness: %d\n", 
-        opts->lang_set, opts->compiler_set, opts->config_set, opts->strictness_set
-    );
+
+    if (opts == NULL || cfg == NULL) {
+        LOG_ERROR("%s", "Failed to setup options!");
+        goto cleanup;
+    }
+
+    char *compilation_flags = join_cflags(*opts, *cfg);
+    normalize_whitespaces(compilation_flags);
+    fprintf(stderr, "Final compilation command: %s\n", compilation_flags);
+
+    LOG_VERBOSE("Freeing compilation flags at: <%p>", (void*)compilation_flags);
+    free(compilation_flags);
+
+    LOG_VERBOSE("Freeing CompilerOptiosn at: <%p>", (void*)opts);
+    free(opts);
 
     goto cleanup;
     cleanup:
+        LOG_DEBUG("%s", "Jumping to cleanup of main");
         free_compiler_config(cfg);
+
+        LOG_VERBOSE("Freeing cwd at <%p>", (void*)cwd);
         free(cwd);
         return 0;
 }

@@ -27,9 +27,9 @@ static char* get_cwd_win() {
 
 // Returned buffer is malloc()'d by getcwd(), so caller must free() it
 static char* get_cwd_linux() {
-    char *buffer = malloc(PATH_MAX);
+    char *buffer = (char*)malloc(PATH_MAX);
     if (buffer == NULL || getcwd(buffer, PATH_MAX) == NULL) {
-        LOG_ERROR("Failed to get current working directory!");
+        LOG_ERROR("%s", "Failed to get current working directory!");
         return NULL;
     }
 
@@ -87,7 +87,7 @@ char* get_cwd() {
 // Returned buffer is strdup()'d, caller must free() it
 char* get_basename(char *abs_path) {
     if (abs_path == NULL) {
-        LOG_ERROR("NULL was provided instead of a valid path when getting filename!");
+        LOG_ERROR("%s", "NULL was provided instead of a valid path when getting filename!");
         return NULL;
     }
 
@@ -101,7 +101,7 @@ char* get_basename(char *abs_path) {
     #endif
 
     if (last_slash == NULL) {
-        LOG_WARN("Returning path instead of filename, failed to extract it!");
+        LOG_WARN("%s", "Returning path instead of filename, failed to extract it!");
     }
 
     return last_slash ? strdup_cross(++last_slash) : strdup_cross(abs_path);
@@ -109,7 +109,7 @@ char* get_basename(char *abs_path) {
 
 bool is_path_valid(const char *path) {
     if (path == NULL || *path == '\0') {
-        LOG_ERROR("NULL path or empty string was provided, can't validate");
+        LOG_ERROR("%s" , "NULL path or empty string was provided, can't validate");
         return false;
     }
 

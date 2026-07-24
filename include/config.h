@@ -1,10 +1,12 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <stdbool.h>
+
 typedef struct {
-    const char *std;
     const char *cc;
     const char *link;
+    char *std;
     char *target;
 } CompilerConfig;
 

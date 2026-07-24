@@ -57,13 +57,13 @@ static char* get_compiler(const CompilerOptions opts, const CompilerConfig cfg) 
     return compiler;
 }
 
-const char* join_cflags(const CompilerOptions opts, const CompilerConfig cfg) {
+char* join_cflags(const CompilerOptions opts, const CompilerConfig cfg) {
     char cflags[PATH_MAX] = { 0 };
     const usize dest_size = sizeof(cflags);
 
     char *compiler = get_compiler(opts, cfg);
     if (compiler == NULL) {
-        LOG_ERROR("No compiler has been defined anywhere");
+        LOG_ERROR("%s", "No compiler has been defined anywhere");
         return NULL;
     }
 

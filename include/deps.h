@@ -1,6 +1,7 @@
 #ifndef DEPS_H
 #define DEPS_H
 
+#include <stdbool.h>
 #include "config.h"
 
 #ifdef _MSC_VER

@@ -1,6 +1,7 @@
 #ifndef PATH_H
 #define PATH_H
 
+#include <stdbool.h>
 #include "config.h"
 
 #ifndef PATH_MAX

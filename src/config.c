@@ -61,9 +61,12 @@ static char* get_latest_std(const char *cc) {
 #endif
 
 CompilerConfig* new_config(const char *project_name) {
-    CompilerConfig *cfg_base = malloc(sizeof(CompilerConfig));
+    LOG_DEBUG("%s", "initializing CompilerConfig");
+    CompilerConfig *cfg_base = (CompilerConfig*)malloc(sizeof(CompilerConfig));
+    LOG_VERBOSE("Initializing CompilerConfig at <%p>", (void*)cfg_base);
+
     if (cfg_base == NULL) {
-        LOG_ERROR("Failed to allocate memory for compiler config");
+        LOG_ERROR("%s", "Failed to allocate memory for compiler config");
         return NULL;
     }
 
@@ -74,12 +77,17 @@ CompilerConfig* new_config(const char *project_name) {
         cfg_base->target = strdup_cross(project_name); 
     }
 
-    #if defined(_WIN32) || defined(_WIN64)
+    LOG_DEBUG("Assigned <%s> to config's target", cfg_base->target);
+    LOG_DEBUG("%s", "Detected platform: Linux");
+
+    #ifdef _MSC_VER
     cfg_base->std = "clatest";
     cfg_base->cc = "cl.exe";
     cfg_base->link = "link.exe";
 
+    LOG_DEBUG("%s", "Detected platform: Windows");
     #else
+
     i32 gnu_version_works = system("gcc --version >/dev/null 2>&1") == 0 && system("g++ --version >/dev/null 2>&1") == 0;
     i32 clang_version_works = system("clang --version >/dev/null 2>&1") == 0 && system("clang++ --version >/dev/null 2>&1") == 0;
 
@@ -87,16 +95,28 @@ CompilerConfig* new_config(const char *project_name) {
         : clang_version_works ? "clang" : NULL;
 
     char *std = get_latest_std(compiler);
-    cfg_base->std = std != NULL ? std : "c99";
+    cfg_base->std = std != NULL ? std : strdup_cross("c99");
+    LOG_DEBUG("Detected latest language standard <%s>", cfg_base->std);
 
     cfg_base->cc = compiler;
     cfg_base->link = compiler;
     #endif
 
+    LOG_VERBOSE("Returning base CompilerConfig with address <%p>", (void*)cfg_base);
     return cfg_base;
 }
 
 void free_compiler_config(CompilerConfig *cfg) {
-    if (cfg->target != NULL) { free(cfg->target); }
+    LOG_DEBUG("Freeing CompilerConfig at <%p>", (void*)cfg);
+    if (cfg->target != NULL) { 
+        LOG_VERBOSE("Freeing compiler target at: <%p>", (void*)cfg->target);
+        free(cfg->target); 
+        LOG_VERBOSE("%s", "Freed target");
+    }
+
+    LOG_VERBOSE("Freeing language standard string at <%p>", (const void*)(cfg->std));
+    free(cfg->std);
+
     free(cfg);
+    LOG_DEBUG("%s", "Freed CompilerConfig");
 }
