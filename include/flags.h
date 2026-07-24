@@ -8,15 +8,15 @@
         -Wnull-dereference -Wmissing-prototypes -Wstrict-prototypes -Wconversion -Wredundant-decls -Wvla   \
         -Wshadow -Wundef -Wformat=2 -Wformat-security -Wwrite-strings -Wdouble-promotion -Wfloat-equal     \
         -Wswitch-enum -Wswitch-default -Wunused -Wunused-function -Wunused-variable -Wunused-parameter     \
-        -Wlogical-op -Wno-padded -Wno-declaration-after-statement -Weverything -Wno-unknown-warning-option \
-        -Wno-disabled-macro-expansion"
+        -Wno-padded -Wno-declaration-after-statement -Weverything -Wno-jump-misses-init -Wno-unsafe-buffer-usage \
+        -Wno-disabled-macro-expansion -Wno-unknown-warning-option"
 
-    #define STRICT_FLAGS_CPP "-Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wconversion -Wcast-align    \
-        -Wcast-qual -Wstrict-aliasing=2 -Wpointer-arith -Warray-bounds -Wnull-dereference -Wno-padded       \
-        -Wredundant-decls -Wvla -Wshadow -Wundef -Wformat=2 -Wformat-security -Wwrite-strings -Wfloat-equal \
-        -Wswitch-enum -Wswitch-default -Wunused -Wunused-function -Wunused-variable -Wunused-parameter      \
-        -Wlogical-op -Weverything -Wdouble-promotion -Wno-declaration-after-statement -Wsign-conversion     \
-        -Wno-unknown-warning-option -Wno-disabled-macro-expansion"
+    #define STRICT_FLAGS_CPP "-Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wsign-conversion -Wcast-align \
+        -Wcast-qual -Wstrict-aliasing=2 -Wpointer-arith -Warray-bounds -Wnull-dereference -Wdouble-promotion  \
+        -Wredundant-decls -Wvla -Wshadow -Wundef -Wformat=2 -Wformat-security -Wwrite-strings -Wconversion    \
+        -Wfloat-equal -Wswitch-enum -Wswitch-default -Wunused -Wunused-function -Wunused-variable -Wunused-parameter \
+        -Wno-padded -Weverything -Wno-jump-misses-init -Wno-unsafe-buffer-usage -Wno-disabled-macro-expansion        \
+        -Wno-unknown-warning-option"
 #elif defined(__GNUC__)
     #define STRICT_FLAGS "-Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wmaybe-uninitialized       \
         -Wconversion -Wsign-conversion -Wcast-align -Wcast-qual -Wstrict-aliasing=2 -Wpointer-arith    \
@@ -66,5 +66,7 @@
 #endif
 
 Strictness validate_strictness(const char *level_str);
+
 const char* delegate_strictness_flags(const Strictness level);
 char* join_cflags(const CompilerOptions opts, const CompilerConfig cfg);
+char* construct_ldflags(const CompilerOptions opts, const CompilerConfig cfg);

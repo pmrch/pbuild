@@ -1,10 +1,10 @@
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <errno.h>
 
 #include "config.h"
-#include "flags.h"
 #include "parser.h"
+#include "flags.h"
 #include "utils.h"
 #include "path.h"
 #include "log.h"
@@ -58,6 +58,7 @@ static char* get_compiler(const CompilerOptions opts, const CompilerConfig cfg) 
 }
 
 char* join_cflags(const CompilerOptions opts, const CompilerConfig cfg) {
+    LOG_INFO("%s", "Running join_cflags");
     char cflags[PATH_MAX] = { 0 };
     const usize dest_size = sizeof(cflags);
 
@@ -71,7 +72,9 @@ char* join_cflags(const CompilerOptions opts, const CompilerConfig cfg) {
     free(compiler);
 
     if (cfg.std != NULL && *cfg.std != '\0') {
-        strcat_with_space(cflags, dest_size, cfg.std);
+        char std_buf[12] = { 0 };
+        snprintf(std_buf, sizeof(std_buf), "-std=%s", cfg.std);
+        strcat_with_space(cflags, dest_size, std_buf);
     }
 
     strcat_with_space(cflags, dest_size, CFLAGS_BASE);
@@ -84,15 +87,33 @@ char* join_cflags(const CompilerOptions opts, const CompilerConfig cfg) {
     if (opts.strictness_set) {
         const char *strictness = delegate_strictness_flags(opts.strictness);
         strcat_with_space(cflags, dest_size, strictness);
+    } else {
+        strcat_with_space(cflags, dest_size, delegate_strictness_flags(Moderate));
     }
-
-    #if !defined (_MSC_VER)
-    if (opts.mimalloc_lib_path != NULL) {
-        char mimalloc_path[PATH_MAX] = { 0 };
-        snprintf(mimalloc_path, sizeof(mimalloc_path), "-L%s -lmimalloc", opts.mimalloc_lib_path);
-        strcat_cross(cflags, dest_size, mimalloc_path);
-    }
-    #endif
 
     return strdup_cross(cflags);
+}
+
+char* construct_ldflags(const CompilerOptions opts, const CompilerConfig cfg) {
+    char ldflags[PATH_MAX] = { 0 };
+    const usize dest_size = sizeof(ldflags);
+
+    if (cfg.link == NULL || *cfg.link == '\0') {
+        LOG_ERROR("%s", "There was no linker specified!");
+        return NULL;
+    }
+
+    snprintf(ldflags, dest_size, "%s %s", cfg.link, LINKER_FLAGS);
+    if (opts.mimalloc_lib_path != NULL && *opts.mimalloc_lib_path != '\0') {
+        char mimalloc_path[PATH_MAX] = { 0 };
+        #ifdef _MSC_VER
+            snprintf(mimalloc_path, sizeof(mimalloc_path), "/LIBPATH:%s mimalloc-static.lib", opts.mimalloc_lib_path);
+        #else
+            snprintf(mimalloc_path, sizeof(mimalloc_path), "-L%s -lmimalloc", opts.mimalloc_lib_path);
+        #endif
+
+        strcat_cross(ldflags, dest_size, mimalloc_path);
+    }
+
+    return strdup_cross(ldflags);
 }

@@ -147,6 +147,7 @@ void normalize_whitespaces(char *restrict s) {
         return;
     }
 
+    LOG_DEBUG("Normalizing whitespaces for string <%s>", s);
     char *read_ptr  = s;
     char *write_ptr = s;
     u8   found_whitespace = 0;

@@ -1,3 +1,5 @@
+#define LOG_LEVEL 0
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -8,9 +10,9 @@
 #include "config.h"
 #include "parser.h"
 
-
 static i32 verify_arguments(const char *restrict const *argv, const i32 argc) {
     LOG_DEBUG("Verifying command line arguments, found %d args", argc - 1);
+    if (argc == 1) { return 0; }
 
     usize buf_size = (usize)argc * sizeof(argv[0]);
     const char **invalid_flags = (const char**)malloc(buf_size);
@@ -24,19 +26,24 @@ static i32 verify_arguments(const char *restrict const *argv, const i32 argc) {
     i32 invalid_counter = 0;
     const char **invalid_flags_p = invalid_flags;
     
-    for (i32 i = 0; i < argc; i++) {
+    for (i32 i = 1; i < argc; i++) {
         const char *arg = argv[i];
         
         if (!(arg[0] == '-' && arg[1] == '-')) {
             *invalid_flags_p++ = arg;
-            ++invalid_counter;
+            invalid_counter++;
         }
+    }
+
+    if (invalid_flags[0] != NULL) {
+        LOG_DEBUG("First invalid flag is %s", invalid_flags[0]);
     }
 
     LOG_VERBOSE("Freeing invalid flags buffer at <%p>", (void*)invalid_flags);
     free(invalid_flags);
 
     LOG_DEBUG("%s", "Freed internal buffers for argument validation");
+    LOG_DEBUG("verify_arguments return code: %d", invalid_counter);
     return invalid_counter;
 }
 
@@ -64,7 +71,7 @@ i32 main(i32 argc, const char **argv) {
     LOG_VERBOSE("Freeing compilation flags at: <%p>", (void*)compilation_flags);
     free(compilation_flags);
 
-    LOG_VERBOSE("Freeing CompilerOptiosn at: <%p>", (void*)opts);
+    LOG_VERBOSE("Freeing CompilerOptions at: <%p>", (void*)opts);
     free(opts);
 
     goto cleanup;

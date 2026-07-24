@@ -10,7 +10,7 @@
 #define LOG_LEVEL_DEPLOYMENT 5
 
 #ifndef LOG_LEVEL
-#define LOG_LEVEL LOG_LEVEL_VERBOSE
+#define LOG_LEVEL LOG_LEVEL_INFO
 #endif
 
 #if defined(__GNUC__) && !defined(_WIN32)
@@ -26,7 +26,7 @@ PRINTF_LIKE(6, 7);
 #if LOG_LEVEL <= LOG_LEVEL_VERBOSE
 #define LOG_VERBOSE(fmt, ...) log_internal("VERBOSE", "\x1b[35m", __FILE__, __LINE__, __func__, fmt __VA_OPT__(,) __VA_ARGS__) // NOLINT
 #else
-#define LOG_DEBUG(fmt, ...)
+#define LOG_VERBOSE(fmt, ...)
 #endif
 
 #if LOG_LEVEL <= LOG_LEVEL_DEBUG
