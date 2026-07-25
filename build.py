@@ -18,17 +18,17 @@ CC: str = "cl.exe"
 LINK: str = "link.exe"
 TARGET: str = "compile_project"
 
-INCLUDE_MIMALLOC: str = "D:\\devTools\\mimalloc\\include\\mimalloc-3.3"
-LIB: str = "D:\\devTools\\mimalloc\\lib"
+#INCLUDE_MIMALLOC: str = "D:\\devTools\\mimalloc\\include\\mimalloc-3.3"
+#LIB: str = "D:\\devTools\\mimalloc\\lib"
 
-INCLUDES: str = f"/Iinclude /I {INCLUDE_MIMALLOC}"
+INCLUDES: str = f"/Iinclude /I"
 OPTIMIZATION: str = "/GL /fp:fast /O2 /arch:AVX2"
 WINVER: str = "/D_WIN32_WINNT=0x0A00"
 DEBUG: str = "/fsanitize=address /Zi /O0"
 
 STRICT_FLAGS: str = "/W4 /permissive- /w14456 /w14457 /w14668 /w14061 /w14062 /w14244 /w14242 /w14018"
 CFLAGS: str = f"/nologo /std:{C_STANDARD} {STRICT_FLAGS} {WINVER} {INCLUDES} /MT {OPTIMIZATION}"
-LDFLAGS: str = f"/nologo /LTCG /LIBPATH:{LIB} mimalloc.lib advapi32.lib /INCLUDE:mi_version /SUBSYSTEM:CONSOLE"
+LDFLAGS: str = f"/nologo /LTCG advapi32.lib /SUBSYSTEM:CONSOLE"
 
 cwd: Path = Path(os.getcwd())
 src: Path = cwd.joinpath("src")
@@ -75,7 +75,7 @@ def compile_and_link() -> Optional[bool]:
     exec_command: str = f"{LINK} {LDFLAGS} /out:{TARGET}.exe {objects}"
 
     try:
-        _ = subprocess.run(exec_command.split(' '), cwd=cwd, capture_output=True, check=True)
+        _ = subprocess.run(exec_command.split(' '), cwd=cwd, capture_output=False, check=True)
         log.info("Finished linking successfully")
     except Exception as e:
         log.error(f"Linking has failed due to error: {e}")

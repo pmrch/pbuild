@@ -8,6 +8,7 @@
 // Support both Windows and Linux
 #ifdef _MSC_VER
 #include <direct.h>
+#include <ctype.h>
 
 // Returned buffer is malloc()'d by _getcwd(), so caller must free() it
 static char* get_cwd_win() {
@@ -20,13 +21,25 @@ static char* get_cwd_win() {
     return buffer;
 }
 
+
+static bool is_path_valid_win(char *path) {
+    bool starts_correctly = !isalpha((int)(path[0])) && path[1] == ':' && path[2] == '\\';
+    if (path == NULL || *path == '\0' || !starts_correctly) {
+        return false;
+    }
+
+
+
+    return true;
+}
+
 #else
 #include <stdlib.h>
 #include <dirent.h>
 #include <unistd.h>
 
 // Returned buffer is malloc()'d by getcwd(), so caller must free() it
-static char* get_cwd_linux() {
+static char* get_cwd_unix() {
     char *buffer = (char*)malloc(PATH_MAX);
     if (buffer == NULL || getcwd(buffer, PATH_MAX) == NULL) {
         LOG_ERROR("%s", "Failed to get current working directory!");
@@ -79,7 +92,7 @@ char* get_cwd() {
     return get_cwd_win();
     
     #else
-    return get_cwd_linux();
+    return get_cwd_unix();
 
     #endif
 }
