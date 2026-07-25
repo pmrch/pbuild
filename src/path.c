@@ -7,6 +7,9 @@
 
 // Support both Windows and Linux
 #ifdef _MSC_VER
+#define WIN32_LEAN_AND_MEAN
+
+#include <Windows.h>
 #include <direct.h>
 #include <ctype.h>
 
@@ -28,7 +31,33 @@ static bool is_path_valid_win(char *path) {
         return false;
     }
 
+    char *ptr = path;
+    usize num_backslashes = 0;
+    usize dir_depth = 0;
 
+    bool is_in_dir = false;
+    while (*ptr != '\0') {
+        if (*ptr == '\\') {
+            is_in_dir = true;
+            ++num_backslashes;
+        }
+
+        if (*ptr != '\\' && !is_in_dir) {
+            is_in_dir = true;
+            ++dir_depth;
+        }
+
+        ++ptr;
+    }
+
+    if ((dir_depth > num_backslashes) || dir_depth == 0) { 
+        return false; 
+    }
+
+    DWORD attrs = GetFileAttributesA(path);
+    if (attrs == INVALID_FILE_ATTRIBUTES) {
+        return false;
+    }
 
     return true;
 }

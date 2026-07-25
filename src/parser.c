@@ -95,7 +95,6 @@ static void set_lang(char *restrict lang, CompilerOptions *opts) {
 // Expects a path that contains the dynamically or statically linkable
 // mimalloc library .a/.so/.lib file(s)
 static void set_mimalloc(char *restrict path, CompilerOptions *opts) {
-    #if !defined(_WIN32) && !defined(_WIN64)
     if (!is_path_valid(path)) {
         LOG_WARN("Provided path <%s> was invalid! Can't look for mimalloc.", path);
         opts->use_system_mimalloc = true;
@@ -104,10 +103,6 @@ static void set_mimalloc(char *restrict path, CompilerOptions *opts) {
 
     opts->mimalloc_lib_path = path;
     opts->use_system_mimalloc = false;
-    #else
-    
-
-    #endif
 }
 
 CompilerOptions* parse_compiler_flags(const int argc, const char **argv) {
