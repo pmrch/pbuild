@@ -110,6 +110,12 @@ CompilerConfig* new_config(const char *project_name) {
 
     LOG_DEBUG("%s", "Detected platform: Windows");
     return cfg_base;
+
+    #else
+    char *std = get_latest_std(compiler);
+    cfg_base->std = std != NULL ? std : strdup_cross("c99");
+    LOG_DEBUG("Detected latest language standard <%s>", cfg_base->std);
+
     #endif
 
     LOG_DEBUG("Assigned <%s> to config's target", cfg_base->target);
@@ -117,10 +123,6 @@ CompilerConfig* new_config(const char *project_name) {
 
     cfg_base->cc = compiler;
     cfg_base->link = compiler;
-
-    char *std = get_latest_std(compiler);
-    cfg_base->std = std != NULL ? std : strdup_cross("c99");
-    LOG_DEBUG("Detected latest language standard <%s>", cfg_base->std);
 
     LOG_VERBOSE("Returning base CompilerConfig with address <%p>", (void*)cfg_base);
     return cfg_base;

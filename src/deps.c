@@ -1,22 +1,16 @@
 #include <stdbool.h>
-// Not used on linux start
-#include <stdlib.h>
-#include <stdio.h>
-// Not used on linux end
 #include <string.h>
 
 #include "deps.h"
 #include "config.h"
 #include "parser.h"
-// Not used on linux start
-#include "utils.h"
-#include "path.h"
-// Not used on linux end
 #include "log.h"
 
 #ifdef _MSC_VER
 #include <Windows.h>
 #include <fileapi.h>
+
+#include "path.h"
 
 static bool is_mimalloc_available_win(const CompilerOptions *opts) {
     if (opts != NULL && opts->mimalloc_lib_path != NULL && *opts->mimalloc_lib_path != '\0') {

@@ -15,8 +15,6 @@
 #include <stdbool.h>
 #include <immintrin.h>
 
-#include "path.h"
-
 static void cpuid(i32 leaf, i32 subleaf, i32 out[4]) {
     __cpuidex(out, leaf, subleaf);
 }
