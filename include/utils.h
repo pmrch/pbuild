@@ -4,6 +4,7 @@
 // ===========================================
 // =         Shared Included Headers         =
 // ===========================================
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -49,9 +50,7 @@ typedef struct {
 // ===========================================
 // =        Windows CPU intrinsics           =
 // ===========================================
-#if defined(_WIN32) || defined(_WIN64)
-#include <stdbool.h>
-
+#if defined(_MSC_VER)
 typedef struct CpuFeatures {
     bool sse2;
     bool avx;

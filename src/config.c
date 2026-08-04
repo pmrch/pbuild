@@ -1,5 +1,3 @@
-#define MAX_VERSION 23
-
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -9,6 +7,8 @@
 #include "log.h"
 
 #ifndef _MSC_VER
+#define MAX_VERSION 23
+
 #include <stdio.h>
 #include <unistd.h>
 
@@ -100,25 +100,22 @@ CompilerConfig* new_config(const char *project_name) {
         cfg_base->target = strdup_cross(project_name); 
     }
 
-    // Get compiler
+    LOG_DEBUG("Assigned <%s> to config's target", cfg_base->target);
     const char *compiler = detect_compiler();
 
     #ifdef _MSC_VER
     cfg_base->cc = compiler;
-    cfg_base->std = "clatest";
+    cfg_base->std = strdup_cross("clatest");
     cfg_base->link = "link.exe";
 
     LOG_DEBUG("%s", "Detected platform: Windows");
+    LOG_VERBOSE("Returning base CompilerConfig with address <%p>", (void*)cfg_base);
     return cfg_base;
 
     #else
     char *std = get_latest_std(compiler);
     cfg_base->std = std != NULL ? std : strdup_cross("c99");
     LOG_DEBUG("Detected latest language standard <%s>", cfg_base->std);
-
-    #endif
-
-    LOG_DEBUG("Assigned <%s> to config's target", cfg_base->target);
     LOG_DEBUG("%s", "Detected platform: Linux");
 
     cfg_base->cc = compiler;
@@ -126,6 +123,8 @@ CompilerConfig* new_config(const char *project_name) {
 
     LOG_VERBOSE("Returning base CompilerConfig with address <%p>", (void*)cfg_base);
     return cfg_base;
+
+    #endif
 }
 
 void free_compiler_config(CompilerConfig *cfg) {

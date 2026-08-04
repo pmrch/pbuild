@@ -1,7 +1,3 @@
-#ifdef _MSC_VER
-#define NTDDI_WIN10_GE
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 

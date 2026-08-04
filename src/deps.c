@@ -7,7 +7,11 @@
 #include "log.h"
 
 #ifdef _MSC_VER
+#define WIN32_LEAN_AND_MEAN
+#define NTDDI_VERSION 0x0A000000
+
 #include <Windows.h>
+#include <stdlib.h>
 #include <fileapi.h>
 
 #include "path.h"
@@ -24,10 +28,8 @@ static bool is_mimalloc_available_win(const CompilerOptions *opts) {
             if (isRoot || isParent) { continue; }
 
             char *ext = strrchr(findData.cFileName, '.');
-            if (ext == NULL) {
-                LOG_ERROR("%s", "There was not file in mimalloc lib directory that can be linked");
-                return false;
-            } else { ++ext; } 
+            LOG_VERBOSE("Currently checking %s", findData.cFileName);
+            if (ext == NULL) { continue; } else { ++ext; } 
 
             bool hasMimalloc = strstr(findData.cFileName, "mimalloc") != NULL;
             bool isLibFile = strncmp(ext, "lib", 3) == 0 || strncmp(ext, "dll", 3) == 0;
@@ -45,7 +47,7 @@ static bool is_mimalloc_available_win(const CompilerOptions *opts) {
         FindClose(dirHandle);
     }
 
-    i32 res = system("vcpkg --version");
+    i32 res = system("vcpkg --version > NUL 2>&1");
     if (res != 0) { LOG_DEBUG("%s", "vcpkg was not found on PATH"); }
 
     char vcpkg_root[PATH_MAX] = { 0 };

@@ -14,7 +14,7 @@ logging.basicConfig(
 log: logging.Logger = logging.getLogger("rich")
 
 C_STANDARD: str = "clatest"
-CC: str = "cl.exe"
+CC: str = "clang-cl.exe"
 LINK: str = "link.exe"
 TARGET: str = "compile_project"
 
@@ -28,7 +28,8 @@ DEBUG: str = "/fsanitize=address /Zi /O0"
 
 STRICT_FLAGS: str = "/W4 /permissive- /w14456 /w14457 /w14668 /w14061 /w14062 /w14244 /w14242 /w14018"
 CFLAGS: str = f"/nologo /std:{C_STANDARD} {STRICT_FLAGS} {WINVER} {INCLUDES} /MT {OPTIMIZATION}"
-LDFLAGS: str = f"/nologo /LTCG advapi32.lib /SUBSYSTEM:CONSOLE"
+#LDFLAGS: str = f"/nologo /LTCG advapi32.lib /SUBSYSTEM:CONSOLE"
+LDFLAGS: str = f"/nologo advapi32.lib /SUBSYSTEM:CONSOLE"
 
 cwd: Path = Path(os.getcwd())
 src: Path = cwd.joinpath("src")
@@ -51,7 +52,7 @@ def compile_and_link() -> Optional[bool]:
         obj_path: Path = build.joinpath(obj_name);
         
         exec_command: str = f"{CC} {CFLAGS} /c {source_file} /Fo:{obj_path}"
-        args = base_args + ["/c", str(source_file), f"/Fo:{obj_path}"]
+        args: list[str] = base_args + ["/c", str(source_file), f"/Fo:{obj_path}"]
         
         compile_db.append({
             "arguments": args,
@@ -61,8 +62,8 @@ def compile_and_link() -> Optional[bool]:
         })
         
         try:
-            result = subprocess.run(exec_command.split(' '), cwd=cwd, capture_output=True, check=True, text=True)
-            log.info(f"Compiled src/{result.stdout.strip()} => build/{obj_name}")
+            result = subprocess.run(args, cwd=cwd, capture_output=True, check=True, text=True)
+            log.info(f"Compiled src/{result.stdout.strip() if result.stdout else source_file} => build/{obj_name}")
         except Exception as e:
             log.error(f"Failed to compile {src_path.name} due to error: {e}")
             return True

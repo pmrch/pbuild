@@ -13,7 +13,7 @@
 #define LOG_LEVEL LOG_LEVEL_VERBOSE
 #endif
 
-#if defined(__GNUC__) && !defined(_WIN32)
+#if defined(__clang__) || defined (_GNUC_)
     #define PRINTF_LIKE(fmt_idx, arg_idx) __attribute__((format(printf, 6, 7)))
 #else
     #define PRINTF_LIKE(fmt_idx, arg_idx)

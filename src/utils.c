@@ -1,4 +1,6 @@
+#ifndef _MSC_VER
 #define _POSIX_C_SOURCE 200809L
+#endif
 
 #include <ctype.h>
 #include <stdio.h>

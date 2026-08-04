@@ -125,21 +125,20 @@ CompilerOptions* parse_compiler_flags(const int argc, const char **argv) {
     // Pre-increment to skip first argument which is the executable name itself
     while (*++argv_p != NULL) {
         strip_quotes(*argv_p);
-        char *value = strrchr(*argv_p, '=');
-        
-        if (value != NULL) { 
-            ++value; 
-            to_lowercase(value);
-        }
 
+        char *value = strrchr(*argv_p, '=');
+        char *original_casing = strdup_cross(++value);
+        
+        if (value != NULL) { to_lowercase(value); }
         if (strncmp(*argv_p, "--with-system-mimalloc", 22) == 0 && !opts->use_system_mimalloc) {
             opts->use_system_mimalloc = true;
         }
 
         if (strncmp(*argv_p, "--with-mimalloc=", 16) == 0 && opts->mimalloc_lib_path == NULL) {
-            LOG_INFO("Received mimalloc path <%s>", value);
+            LOG_INFO("Received mimalloc path <%s>", original_casing);
             if (!opts->use_system_mimalloc) {
-                set_mimalloc(value, opts);
+                set_mimalloc(original_casing, opts);
+                free(original_casing);
             } else {
                 LOG_ERROR("%s", "--with-system-mimalloc and --with-mimalloc are incompatible, only one of them can be specified, or just simply neither");
                 free_mutable_cloned_string_array(argv_clone);

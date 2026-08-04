@@ -126,7 +126,7 @@ char* construct_ldflags(const CompilerOptions *opts, const CompilerConfig cfg) {
     }
 
     snprintf(ldflags, dest_size, "%s %s", cfg.link, LINKER_FLAGS);
-    LOG_DEBUG("Wrote the following to ldflags: %s", ldflags);
+    //LOG_DEBUG("Wrote the following to ldflags: %s", ldflags);
     if (opts->mimalloc_lib_path != NULL && *opts->mimalloc_lib_path != '\0') {
         if (!is_mimalloc_available(cfg, opts)) { 
             LOG_DEBUG("%s", "Mimalloc was not available, trying to download...");
@@ -135,7 +135,7 @@ char* construct_ldflags(const CompilerOptions *opts, const CompilerConfig cfg) {
 
         char mimalloc_path[PATH_MAX] = { 0 };
         join_ldflags_path(mimalloc_path, sizeof(mimalloc_path), opts->mimalloc_lib_path);
-        strcat_cross(ldflags, dest_size, mimalloc_path);
+        strcat_with_space(ldflags, dest_size, mimalloc_path);
     }
 
     return strdup_cross(ldflags);

@@ -26,8 +26,9 @@ static char* get_cwd_win() {
 
 
 static bool is_path_valid_win(char *path) {
-    bool starts_correctly = !isalpha((int)(path[0])) && path[1] == ':' && path[2] == '\\';
+    bool starts_correctly = isalpha((int)(path[0])) && path[1] == ':' && path[2] == '\\';
     if (path == NULL || *path == '\0' || !starts_correctly) {
+        LOG_DEBUG("%s", "Path doesn't start correctly!");
         return false;
     }
 
