@@ -55,10 +55,16 @@ static bool is_path_valid_win(char *path) {
     }
 
     DWORD attrs = GetFileAttributesA(path);
-    if (attrs == INVALID_FILE_ATTRIBUTES) {
-        return false;
+    if (attrs == INVALID_FILE_ATTRIBUTES) { 
+        LOG_DEBUG("Directory at <%s> not found", path);
+        return false; 
     }
 
+    if (!(attrs & FILE_ATTRIBUTE_DIRECTORY)) { 
+        LOG_WARN("Provided path <%s> was not a directory!", path);
+        return false; 
+    }
+ 
     return true;
 }
 

@@ -1,4 +1,5 @@
-#define LOG_LEVEL 0
+#define LOG_LEVEL 1
+#define NTDDI_WIN10_GE
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +16,7 @@ static i32 verify_arguments(const char *restrict const *argv, const i32 argc) {
     if (argc == 1) { return 0; }
 
     usize buf_size = (usize)argc * sizeof(argv[0]);
-    const char **invalid_flags = (const char**)malloc(buf_size);
+    const char **invalid_flags = (const char**)calloc(1, buf_size);
     LOG_VERBOSE("Allocated %zu bytes for invalid flags at %p", buf_size, (void*)invalid_flags);
 
     if (invalid_flags == NULL) {
@@ -35,7 +36,7 @@ static i32 verify_arguments(const char *restrict const *argv, const i32 argc) {
         }
     }
 
-    if (invalid_flags[0] != NULL) {
+    if (invalid_flags != NULL && invalid_flags[0] != NULL && *invalid_flags[0] != '\0') {
         LOG_DEBUG("First invalid flag is %s", invalid_flags[0]);
     }
 
@@ -51,6 +52,10 @@ i32 main(i32 argc, const char **argv) {
     fprintf(stderr, "Current log level: %d\n", LOG_LEVEL);
     CompilerConfig *cfg = new_config("compile_project");
     if (cfg == NULL) { return -1; }
+
+    /*LOG_DEBUG("Created new config with: \nCompilerConfig {\n\tcc: %s\n\tlink: %s\n\tstd: %s\n\ttarget: %s\n}", 
+        cfg->cc, cfg->link, cfg->std, cfg->target
+    );*/
 
     char *cwd = get_cwd();
     LOG_DEBUG("Got current working directory <%s>", cwd);
@@ -68,8 +73,15 @@ i32 main(i32 argc, const char **argv) {
     normalize_whitespaces(compilation_flags);
     fprintf(stderr, "Final compilation command: %s\n", compilation_flags);
 
+    char *linker_flags = construct_ldflags(opts, *cfg);
+    normalize_whitespaces(linker_flags);
+    fprintf(stderr, "Final linker command: %s\n", linker_flags);
+
     LOG_VERBOSE("Freeing compilation flags at: <%p>", (void*)compilation_flags);
     free(compilation_flags);
+
+    LOG_VERBOSE("Freeing linker flags at: <%p>", (void*)linker_flags);
+    free(linker_flags);
 
     LOG_VERBOSE("Freeing CompilerOptions at: <%p>", (void*)opts);
     free(opts);

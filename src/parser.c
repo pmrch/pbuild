@@ -20,7 +20,7 @@ Compiler pair_compiler(const char *compiler) {
     if (strcmp(compiler, "g++") == 0) { return (Compiler){ .cc="gcc", .cxx="g++" }; }
 
     LOG_WARN("%s", "Compiler was not defined! Returning empty strings");
-    return (Compiler){ .cc="", .cxx="" };
+    return (Compiler){ .cc=NULL, .cxx=NULL };
 }
 
 static bool is_compiler_valid(const char *str) {
@@ -57,11 +57,11 @@ static void set_compiler(char *restrict compiler, CompilerOptions *opts) {
         #ifdef _MSC_VER
         opts->compiler = (Compiler){ .cc="cl.exe", .cxx="cl.exe" };
 
-        #elif defined(__GNUC__)
-        opts->compiler = (Compiler){ .cc="gcc", .cxx="g++" };
-
         #elif defined(__clang__)
         opts->compiler = (Compiler){ .cc="clang", .cxx="clang++" };
+
+        #elif defined(__GNUC__)
+        opts->compiler = (Compiler){ .cc="gcc", .cxx="g++" };
 
         #endif
     } else {
@@ -136,7 +136,14 @@ CompilerOptions* parse_compiler_flags(const int argc, const char **argv) {
         }
 
         if (strncmp(*argv_p, "--with-mimalloc=", 17) == 0 && opts->mimalloc_lib_path == NULL) {
-            set_mimalloc(value, opts);
+            if (!opts->use_system_mimalloc) {
+                set_mimalloc(value, opts);
+            } else {
+                LOG_ERROR("--with-system-mimalloc and --with-mimalloc are incompatible, only one of them can be specified, or just simply neither");
+                free_mutable_cloned_string_array(argv_clone);
+                free(opts);
+                return NULL;
+            }
         }
 
         if (strncmp(*argv_p, "--strictness=", 13) == 0 && !opts->strictness_set) {

@@ -69,4 +69,4 @@ Strictness validate_strictness(const char *level_str);
 
 const char* delegate_strictness_flags(const Strictness level);
 char* join_cflags(const CompilerOptions opts, const CompilerConfig cfg);
-char* construct_ldflags(const CompilerOptions opts, const CompilerConfig cfg);
+char* construct_ldflags(const CompilerOptions *opts, const CompilerConfig cfg);
