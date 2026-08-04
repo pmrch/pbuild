@@ -34,6 +34,18 @@ typedef enum {
     Strict   = 3
 } Strictness;
 
+typedef void (*Destructor)(void *);
+
+typedef struct {
+    char **strings;
+    usize num_split;
+} SplitString;
+
+typedef struct {
+    void       *obj;
+    Destructor func;
+} ToFree;
+
 // ===========================================
 // =        Windows CPU intrinsics           =
 // ===========================================
@@ -54,14 +66,20 @@ const char* get_best_isa();
 // =        General Shared Utility           =
 // ===========================================
 
+// Splits string, returns array pointer and number of elements
+SplitString *split(const char *str, i32 chr);
+
 // Frees all heap-allocated strings of a heap-allocated buffer, 
 // and the buffer itself
 void free_mutable_cloned_string_array(char **arr);
 
 // If a sequence of whitespace is found, they get reduced to a singular whitespace
 void normalize_whitespaces(char *restrict s);
+
+void free_all(const usize count, ...);
 void to_lowercase(char *restrict str);
 void strip_quotes(char *restrict s);
+void free_split(SplitString* ss);
 
 char* strdup_cross(const char *str);
 char** clone_string_array_mutable(const char **arr, usize num_elem);

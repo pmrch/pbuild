@@ -1,5 +1,5 @@
 # Compiler choice
-CC = gcc
+CC = clang
 
 # Strict Flag Collection
 # -Werror: Turn warnings into errors
@@ -19,10 +19,10 @@ STRICT_FLAGS_CLANG = -Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wold-styl
 	-Wshadow -Wundef -Wformat=2 -Wformat-security -Wwrite-strings -Wdouble-promotion -Wfloat-equal     \
 	-Wswitch-enum -Wswitch-default -Wunused -Wunused-function -Wunused-variable -Wunused-parameter     \
 	-Wno-padded -Wno-declaration-after-statement -Weverything -Wno-jump-misses-init -Wno-unsafe-buffer-usage \
-	-Wno-disabled-macro-expansion -Wno-unknown-warning-option
+	-Wno-disabled-macro-expansion -Wno-unknown-warning-option -Wno-unused-macros
 
 # Combine with standard flags and optimization
-CFLAGS = -std=c23 $(STRICT_FLAGS_GCC) -Iinclude -MMD -MP -O3 -march=native -flto -ffast-math
+CFLAGS = -std=c23 $(STRICT_FLAGS_CLANG) -Iinclude -MMD -MP -O3 #-O3 -march=native -flto -ffast-math
 
 # Linker flags (for libraries)
 LDFLAGS = -flto

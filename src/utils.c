@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include <stdlib.h>
 
 #include "utils.h"
@@ -13,6 +14,8 @@
 #include <corecrt.h>
 #include <stdbool.h>
 #include <immintrin.h>
+
+#include "path.h"
 
 static void cpuid(i32 leaf, i32 subleaf, i32 out[4]) {
     __cpuidex(out, leaf, subleaf);
@@ -61,6 +64,43 @@ const char* get_best_isa() {
     return "";
 }
 #endif
+
+SplitString *split(const char *str, i32 chr) {
+    if (str == NULL) {
+        LOG_ERROR("%s", "Cannot split string, provided NULL!");
+        return NULL;
+    }
+
+    SplitString *ss = (SplitString*)malloc(sizeof(SplitString));
+    if (ss == NULL) {
+        LOG_ERROR("%s", "Failed to allocate memory for string split destination!");
+        return NULL;
+    } else {
+        ss->strings = (char**)malloc(strlen(str) + 1);
+        if (ss->strings == NULL) {
+            LOG_ERROR("%s", "Failed to allocate string array within SplitString");
+            free(ss);
+            return NULL;
+        }
+
+        ss->num_split = 0;
+    }
+
+    const char *ptr = str;
+    while (*ptr != '\0') {
+        char *first_member = strchr(ptr, chr);
+        if (first_member == NULL) {
+            LOG_ERROR("%s", "The string cannot be split, no breakpoint at given character");
+            return NULL;
+        }
+
+        usize first_member_len = strlen(first_member);
+        ss->strings[ss->num_split] = strdup_cross(first_member);
+        ptr += (first_member_len + 1);
+    }
+
+    return ss;
+}
 
 char *strdup_cross(const char *str) {
     #ifdef _MSC_VER
@@ -126,7 +166,7 @@ i32 create_test_file() {
     }
 
     #ifndef _MSC_VER
-    if (system("touch test.c && echo -E \"int main(void) { return 0; }\" > test.c") == 0) {
+    if (system("touch test.c && echo \"int main(void) { return 0; }\" > test.c") == 0) {
         return 0;
     }
 
@@ -140,6 +180,45 @@ i32 create_test_file() {
     return -1;
 }
 
+void free_all(const usize count, ...) {
+    va_list args;
+    va_start(args, count);
+    
+    for (usize i = 0; i < count; i++) {
+        ToFree *obj = va_arg(args, ToFree*);
+        if (obj == NULL) { continue; }
+
+        Destructor func = obj->func != NULL ? obj->func : free; 
+        func(obj->obj);
+    }
+
+    va_end(args);
+}
+
+void free_split(SplitString* ss) {
+    LOG_DEBUG("%s", "Freeing a SplitString");
+    LOG_VERBOSE("Freeing a SplitString pointer at <%p>", (void*)ss);
+    if (ss == NULL) { return; }
+
+    if (ss->strings != NULL && ss->num_split > 0) { 
+        for (usize i = 0; i < ss->num_split; i++) {
+            LOG_VERBOSE("Freeing the %zu. string in SplitString", i);
+            free(ss->strings[i]);
+        }
+
+        LOG_DEBUG("%s", "Freed all strings from SplitString");
+        ss->num_split = 0;
+    }
+
+    LOG_VERBOSE("Freeing string array of SplitString at <%p>", (void*)ss->strings);
+    free(ss->strings);
+    LOG_DEBUG("%s", "Freed string array of SplitString");
+
+    LOG_VERBOSE("Freeing SplitString at <%p>", (void*)ss);
+    free(ss);
+    LOG_DEBUG("%s", "Freed split string successfully!");
+}
+
 // If a sequence of whitespace is found, they get reduced to a singular whitespace
 void normalize_whitespaces(char *restrict s) {
     if (s == NULL || *s == '\0') {
@@ -147,7 +226,7 @@ void normalize_whitespaces(char *restrict s) {
         return;
     }
 
-    LOG_DEBUG("Normalizing whitespaces for string <%s>", s);
+    //LOG_DEBUG("Normalizing whitespaces for string <%s>", s);
     char *read_ptr  = s;
     char *write_ptr = s;
     u8   found_whitespace = 0;

@@ -63,7 +63,7 @@ static void write_std_buf(char *buf, const usize bufsize, const char *std) {
     snprintf(buf, bufsize, "/std:%s", std);
 
     #else
-    snprintf(buf, sizeof(bufsize), "-std=%s", std);
+    snprintf(buf, bufsize, "-std=%s", std);
 
     #endif
 }
@@ -87,13 +87,13 @@ char* join_cflags(const CompilerOptions opts, const CompilerConfig cfg) {
     if (compiler == NULL) {
         LOG_ERROR("%s", "No compiler has been defined anywhere");
         return NULL;
-    }
+    } else { LOG_DEBUG("Got compiler <%s>", compiler); }
 
     snprintf(cflags, sizeof(cflags), "%s", compiler);
     free(compiler);
 
     if (cfg.std != NULL && *cfg.std != '\0') {
-        char std_buf[14] = { 0 };
+        char std_buf[15] = { 0 };
         write_std_buf(std_buf, sizeof(std_buf), cfg.std);
         strcat_with_space(cflags, dest_size, std_buf);
     }
@@ -116,6 +116,7 @@ char* join_cflags(const CompilerOptions opts, const CompilerConfig cfg) {
 }
 
 char* construct_ldflags(const CompilerOptions *opts, const CompilerConfig cfg) {
+    LOG_INFO("%s", "Running construct_ldflags");
     char ldflags[PATH_MAX] = { 0 };
     const usize dest_size = sizeof(ldflags);
 
@@ -128,7 +129,7 @@ char* construct_ldflags(const CompilerOptions *opts, const CompilerConfig cfg) {
     LOG_DEBUG("Wrote the following to ldflags: %s", ldflags);
     if (opts->mimalloc_lib_path != NULL && *opts->mimalloc_lib_path != '\0') {
         if (!is_mimalloc_available(cfg, opts)) { 
-            LOG_DEBUG("Mimalloc was not available, trying to download...");
+            LOG_DEBUG("%s", "Mimalloc was not available, trying to download...");
             return NULL; 
         }
 

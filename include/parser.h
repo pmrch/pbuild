@@ -11,7 +11,7 @@ typedef struct {
 
 typedef struct {
     Compiler    compiler;
-    const char  *mimalloc_lib_path; // Library search path for mimalloc (-L or /LIBPATH:)
+    char        *mimalloc_lib_path; // Library search path for mimalloc (-L or /LIBPATH:)
     Lang        lang;  
     Config      config;
     Strictness  strictness;   

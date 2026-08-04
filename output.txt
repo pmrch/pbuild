@@ -1,0 +1,75 @@
+Current log level: 0
+[36m[DEBUG][0m src/config.c:64:new_config: initializing CompilerConfig
+[35m[VERBOSE][0m src/config.c:66:new_config: Initializing CompilerConfig at <0x712bb35a0010>
+[36m[DEBUG][0m src/config.c:80:new_config: Assigned <compile_project> to config's target
+[36m[DEBUG][0m src/config.c:81:new_config: Detected platform: Linux
+[36m[DEBUG][0m src/config.c:99:new_config: Detected latest language standard <c23>
+[35m[VERBOSE][0m src/config.c:105:new_config: Returning base CompilerConfig with address <0x712bb35a0010>
+[36m[DEBUG][0m src/main.c:59:main: Created new config with: 
+CompilerConfig {
+	cc: clang
+	link: clang
+	std: c23
+	target: compile_project
+}
+[36m[DEBUG][0m src/main.c:62:main: Got current working directory </home/patrik/code/C/c-project-builder>
+[35m[VERBOSE][0m src/main.c:63:main: Current working directory is at: <0x730bb35a0100>
+[36m[DEBUG][0m src/main.c:16:verify_arguments: Verifying command line arguments, found 2 args
+[35m[VERBOSE][0m src/main.c:21:verify_arguments: Allocated 24 bytes for invalid flags at 0x712bb35a0040
+[35m[VERBOSE][0m src/main.c:44:verify_arguments: Freeing invalid flags buffer at <0x712bb35a0040>
+[36m[DEBUG][0m src/main.c:47:verify_arguments: Freed internal buffers for argument validation
+[36m[DEBUG][0m src/main.c:48:verify_arguments: verify_arguments return code: 0
+[32m[INFO][0m src/parser.c:140:parse_compiler_flags: Received mimalloc path </usr/lib>
+[36m[DEBUG][0m src/parser.c:98:set_mimalloc: Setting mimalloc up with path </usr/lib>
+[32m[INFO][0m src/parser.c:169:parse_compiler_flags: We got 3 args
+[32m[INFO][0m src/flags.c:82:join_cflags: Running join_cflags
+[36m[DEBUG][0m src/flags.c:90:join_cflags: Got compiler <clang>
+Final compilation command: clang -std=c23 -Iinclude -MMD -MP -flto -ffast-math -O3 -march=native -Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wold-style-definition -Wsign-conversion -Wcast-align -Wcast-qual -Wstrict-aliasing=2 -Wpointer-arith -Warray-bounds -Wnull-dereference -Wmissing-prototypes -Wstrict-prototypes -Wconversion -Wredundant-decls -Wvla -Wshadow -Wundef -Wformat=2 -Wformat-security -Wwrite-strings -Wdouble-promotion -Wfloat-equal -Wswitch-enum -Wswitch-default -Wunused -Wunused-function -Wunused-variable -Wunused-parameter -Wno-padded -Wno-declaration-after-statement -Weverything -Wno-jump-misses-init -Wno-unsafe-buffer-usage -Wno-disabled-macro-expansion -Wno-unknown-warning-option
+[32m[INFO][0m src/flags.c:119:construct_ldflags: Running construct_ldflags
+[36m[DEBUG][0m src/flags.c:129:construct_ldflags: Wrote the following to ldflags: clang -flto
+[36m[DEBUG][0m src/deps.c:115:is_mimalloc_available: Entered is_mimalloc_available
+[36m[DEBUG][0m src/deps.c:81:is_mimalloc_available_unix: Skipping reading <.>
+[36m[DEBUG][0m src/deps.c:81:is_mimalloc_available_unix: Skipping reading <..>
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/engines-3> had no basename or extension
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/os-release> had no basename or extension
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/llvm21> had no basename or extension
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/perl5> had no basename or extension
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/wsl> had no basename or extension
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/pkgconfig> had no basename or extension
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/gcc> had no basename or extension
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/clang> had no basename or extension
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/man-db> had no basename or extension
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/ssh> had no basename or extension
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/bear> had no basename or extension
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/sudo> had no basename or extension
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/groff> had no basename or extension
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/bfd-plugins> had no basename or extension
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/cmake> had no basename or extension
+[36m[DEBUG][0m src/deps.c:87:is_mimalloc_available_unix: Directory </usr/lib/ossl-modules> had no basename or extension
+Final linker command: clang -flto-L/usr/lib -lmimalloc
+[35m[VERBOSE][0m src/main.c:81:main: Freeing compilation flags at: <0x726bb35a0080>
+[35m[VERBOSE][0m src/main.c:84:main: Freeing linker flags at: <0x713bb35a0050>
+[35m[VERBOSE][0m src/main.c:87:main: Freeing CompilerOptions at: <0x713bb35a0010>
+src/utils.c:191:13: runtime error: call to function (unknown) through pointer to incorrect function type 'void (*)(void *)'
+(/home/patrik/code/C/c-project-builder/pbuild+0x102dc8): note: (unknown) defined here
+SUMMARY: UndefinedBehaviorSanitizer: undefined-behavior src/utils.c:191:13 
+[36m[DEBUG][0m src/config.c:110:free_compiler_config: Freeing CompilerConfig at <0x712bb35a0010>
+[35m[VERBOSE][0m src/config.c:112:free_compiler_config: Freeing compiler target at: <0x711bb35a0010>
+[35m[VERBOSE][0m src/config.c:114:free_compiler_config: Freed target
+[35m[VERBOSE][0m src/config.c:117:free_compiler_config: Freeing language standard string at <0x711bb35a0030>
+[36m[DEBUG][0m src/config.c:121:free_compiler_config: Freed CompilerConfig
+
+=================================================================
+==7348==ERROR: LeakSanitizer: detected memory leaks
+
+Direct leak of 9 byte(s) in 1 object(s) allocated from:
+    #0 0x648e26063e47  (/home/patrik/code/C/c-project-builder/pbuild+0xa3e47) (BuildId: e3ff1a193578acf87edf30bf0dac32e933919796)
+    #1 0x648e260c383c  (/home/patrik/code/C/c-project-builder/pbuild+0x10383c) (BuildId: e3ff1a193578acf87edf30bf0dac32e933919796)
+    #2 0x648e260c011a  (/home/patrik/code/C/c-project-builder/pbuild+0x10011a) (BuildId: e3ff1a193578acf87edf30bf0dac32e933919796)
+    #3 0x648e260c12d7  (/home/patrik/code/C/c-project-builder/pbuild+0x1012d7) (BuildId: e3ff1a193578acf87edf30bf0dac32e933919796)
+    #4 0x648e260c0c23  (/home/patrik/code/C/c-project-builder/pbuild+0x100c23) (BuildId: e3ff1a193578acf87edf30bf0dac32e933919796)
+    #5 0x648e260bc68c  (/home/patrik/code/C/c-project-builder/pbuild+0xfc68c) (BuildId: e3ff1a193578acf87edf30bf0dac32e933919796)
+    #6 0x74fbb39b98cf  (/lib/ld-musl-x86_64.so.1+0x418cf) (BuildId: d52a6a6a6cc40019365107619ba6233949d49a66)
+    #7 0x7ffd456d89c6  (<unknown module>)
+
+SUMMARY: AddressSanitizer: 9 byte(s) leaked in 1 allocation(s).

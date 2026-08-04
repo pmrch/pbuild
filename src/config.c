@@ -52,13 +52,36 @@ static char* get_latest_std(const char *cc) {
 
     #ifdef _WIN32
     snprintf(cmd, ref_size, "%s -std=c99 -c test.c -o test.exe > NUL 2>&1", cc);
+
     #else
     snprintf(cmd, ref_size, "%s -std=c99 -c test.c -o test > /dev/null 2>&1", cc);
+    
     #endif
 
     return system(cmd) == 0 ? strdup_cross("c99") : NULL;
 }
 #endif
+
+static const char *detect_compiler(void) {
+    #if defined(_MSC_VER) && defined(__clang__)
+    return "clang-cl.exe";
+
+    #elif defined(_MSC_VER) && !defined(__clang__)
+    return "cl.exe";
+
+    #elif defined(__clang__)
+    return "clang";
+
+    #elif defined(__GNUC__)
+    return "gcc";
+
+    #else
+    i32 gnu_version_works = system("gcc --version >/dev/null 2>&1") == 0 && system("g++ --version >/dev/null 2>&1") == 0;
+    i32 clang_version_works = system("clang --version >/dev/null 2>&1") == 0 && system("clang++ --version >/dev/null 2>&1") == 0;
+
+    return gnu_version_works ? "gcc" : clang_version_works ? "clang" : NULL;
+    #endif
+}
 
 CompilerConfig* new_config(const char *project_name) {
     LOG_DEBUG("%s", "initializing CompilerConfig");
@@ -77,30 +100,27 @@ CompilerConfig* new_config(const char *project_name) {
         cfg_base->target = strdup_cross(project_name); 
     }
 
-    LOG_DEBUG("Assigned <%s> to config's target", cfg_base->target);
-    LOG_DEBUG("%s", "Detected platform: Linux");
+    // Get compiler
+    const char *compiler = detect_compiler();
 
     #ifdef _MSC_VER
+    cfg_base->cc = compiler;
     cfg_base->std = "clatest";
-    cfg_base->cc = "cl.exe";
     cfg_base->link = "link.exe";
 
     LOG_DEBUG("%s", "Detected platform: Windows");
-    #else
+    return cfg_base;
+    #endif
 
-    i32 gnu_version_works = system("gcc --version >/dev/null 2>&1") == 0 && system("g++ --version >/dev/null 2>&1") == 0;
-    i32 clang_version_works = system("clang --version >/dev/null 2>&1") == 0 && system("clang++ --version >/dev/null 2>&1") == 0;
+    LOG_DEBUG("Assigned <%s> to config's target", cfg_base->target);
+    LOG_DEBUG("%s", "Detected platform: Linux");
 
-    const char *compiler = gnu_version_works == 0 ? "gcc" 
-        : clang_version_works ? "clang" : NULL;
+    cfg_base->cc = compiler;
+    cfg_base->link = compiler;
 
     char *std = get_latest_std(compiler);
     cfg_base->std = std != NULL ? std : strdup_cross("c99");
     LOG_DEBUG("Detected latest language standard <%s>", cfg_base->std);
-
-    cfg_base->cc = compiler;
-    cfg_base->link = compiler;
-    #endif
 
     LOG_VERBOSE("Returning base CompilerConfig with address <%p>", (void*)cfg_base);
     return cfg_base;

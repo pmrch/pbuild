@@ -1,5 +1,6 @@
-#define LOG_LEVEL 1
+#ifdef _MSC_VER
 #define NTDDI_WIN10_GE
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,6 +11,9 @@
 #include "utils.h"
 #include "config.h"
 #include "parser.h"
+
+#define TO_FREE(obj, func) (&(ToFree){ obj, func != NULL ? (Destructor)(void*)func : free})
+#define TO_FREE_DEF(obj) (&(ToFree){ obj, free })
 
 static i32 verify_arguments(const char *restrict const *argv, const i32 argc) {
     LOG_DEBUG("Verifying command line arguments, found %d args", argc - 1);
@@ -53,9 +57,9 @@ i32 main(i32 argc, const char **argv) {
     CompilerConfig *cfg = new_config("compile_project");
     if (cfg == NULL) { return -1; }
 
-    /*LOG_DEBUG("Created new config with: \nCompilerConfig {\n\tcc: %s\n\tlink: %s\n\tstd: %s\n\ttarget: %s\n}", 
+    LOG_DEBUG("Created new config with: \nCompilerConfig {\n\tcc: %s\n\tlink: %s\n\tstd: %s\n\ttarget: %s\n}", 
         cfg->cc, cfg->link, cfg->std, cfg->target
-    );*/
+    );
 
     char *cwd = get_cwd();
     LOG_DEBUG("Got current working directory <%s>", cwd);
@@ -84,14 +88,11 @@ i32 main(i32 argc, const char **argv) {
     free(linker_flags);
 
     LOG_VERBOSE("Freeing CompilerOptions at: <%p>", (void*)opts);
+    free(opts->mimalloc_lib_path);
     free(opts);
 
     goto cleanup;
     cleanup:
-        LOG_DEBUG("%s", "Jumping to cleanup of main");
-        free_compiler_config(cfg);
-
-        LOG_VERBOSE("Freeing cwd at <%p>", (void*)cwd);
-        free(cwd);
+        free_all(2, TO_FREE(cfg, free_compiler_config), TO_FREE_DEF(cwd));
         return 0;
 }

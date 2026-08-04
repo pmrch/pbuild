@@ -95,13 +95,14 @@ static void set_lang(char *restrict lang, CompilerOptions *opts) {
 // Expects a path that contains the dynamically or statically linkable
 // mimalloc library .a/.so/.lib file(s)
 static void set_mimalloc(char *restrict path, CompilerOptions *opts) {
+    LOG_DEBUG("Setting mimalloc up with path <%s>", path);
     if (!is_path_valid(path)) {
         LOG_WARN("Provided path <%s> was invalid! Can't look for mimalloc.", path);
         opts->use_system_mimalloc = true;
         return;
     }
 
-    opts->mimalloc_lib_path = path;
+    opts->mimalloc_lib_path = strdup_cross(path);
     opts->use_system_mimalloc = false;
 }
 
@@ -131,15 +132,16 @@ CompilerOptions* parse_compiler_flags(const int argc, const char **argv) {
             to_lowercase(value);
         }
 
-        if (strncmp(*argv_p, "--with-system-mimalloc", 23) == 0 && !opts->use_system_mimalloc) {
+        if (strncmp(*argv_p, "--with-system-mimalloc", 22) == 0 && !opts->use_system_mimalloc) {
             opts->use_system_mimalloc = true;
         }
 
-        if (strncmp(*argv_p, "--with-mimalloc=", 17) == 0 && opts->mimalloc_lib_path == NULL) {
+        if (strncmp(*argv_p, "--with-mimalloc=", 16) == 0 && opts->mimalloc_lib_path == NULL) {
+            LOG_INFO("Received mimalloc path <%s>", value);
             if (!opts->use_system_mimalloc) {
                 set_mimalloc(value, opts);
             } else {
-                LOG_ERROR("--with-system-mimalloc and --with-mimalloc are incompatible, only one of them can be specified, or just simply neither");
+                LOG_ERROR("%s", "--with-system-mimalloc and --with-mimalloc are incompatible, only one of them can be specified, or just simply neither");
                 free_mutable_cloned_string_array(argv_clone);
                 free(opts);
                 return NULL;

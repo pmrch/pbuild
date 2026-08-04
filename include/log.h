@@ -10,7 +10,7 @@
 #define LOG_LEVEL_DEPLOYMENT 5
 
 #ifndef LOG_LEVEL
-#define LOG_LEVEL LOG_LEVEL_INFO
+#define LOG_LEVEL LOG_LEVEL_VERBOSE
 #endif
 
 #if defined(__GNUC__) && !defined(_WIN32)
