@@ -1,4 +1,4 @@
-import os, json, glob, subprocess, logging, shutil
+import os, sys, json, glob, subprocess, logging, shutil
 
 from pathlib import Path
 from rich.logging import RichHandler
@@ -35,6 +35,7 @@ STRICT_FLAGS: str = (
     "/clang:-Wno-padded /clang:-Wno-declaration-after-statement /clang:-Weverything /clang:-Wno-jump-misses-init /clang:-Wno-unsafe-buffer-usage "
     "/clang:-Wno-disabled-macro-expansion /clang:-Wno-unknown-warning-option /clang:-Wno-pre-c23-compat"
 )
+
 CFLAGS: str = f"/nologo /std:{C_STANDARD} {STRICT_FLAGS} {WINVER} {INCLUDES} /MT {OPTIMIZATION}"
 LDFLAGS: str = f"/nologo advapi32.lib /SUBSYSTEM:CONSOLE"
 
@@ -46,17 +47,16 @@ if not build.exists():
     log.info("build dir was missing, creating it...")
     os.makedirs(build, exist_ok=True)
 
-def compile_and_link() -> Optional[bool]:
+def compile_and_link(level: str | None) -> Optional[bool]:
     compile_db: list[Any] = []
-    
-    base_args = [CC] + CFLAGS.split()
+    base_args: list[str] = [CC] + CFLAGS.split()
     
     for source_file in glob.iglob(f"{src}/*.c", recursive=True):
         src_path: Path = Path(source_file)
         obj_name: str = f"{src_path.stem}.obj"
         obj_path: Path = build.joinpath(obj_name)
         
-        args: list[str] = base_args + ["/c", str(source_file), f"/Fo:{obj_path}"]
+        args: list[str] = base_args + [f"/clang:-DLOG_LEVEL={level if level is not None else 1}", "/c", str(source_file), f"/Fo:{obj_path}"]
         
         compile_db.append({
             "arguments": args,
@@ -91,7 +91,9 @@ def cleanup() -> None:
         shutil.rmtree(build)
     
 def main() -> None:
-    if (compile_and_link() == None):
+    args: list[str] = sys.argv[1:]
+    
+    if (compile_and_link(args[0]) == None):
         cleanup()
     
 if __name__ == "__main__":

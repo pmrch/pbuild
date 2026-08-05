@@ -58,7 +58,7 @@ typedef struct CpuFeatures {
     bool avx512f;
 } CpuFeatures;
 
-const char* get_best_isa();
+const char* get_best_isa(void);
 #endif
 
 // ===========================================
@@ -85,7 +85,10 @@ char** clone_string_array_mutable(const char **arr, usize num_elem);
 
 FILE* fopen_cross(const char *restrict path, const char *restrict mode);
 
-int create_test_file();
-int strcat_cross(char *restrict dest, size_t dest_size, const char *restrict src);
+i32 create_test_file(void);
+i32 strcat_cross(char *restrict dest, size_t dest_size, const char *restrict src);
+
+i32 strcasecmp_cross(const char *restrict s1, const char *restrict s2);
+i32 strncasecmp_cross(const char *restrict s1, const char *restrict s2, const usize char_count);
 
 #endif

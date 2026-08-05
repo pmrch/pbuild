@@ -54,7 +54,7 @@ static CpuFeatures get_supported_isa() {
     return f;
 }
 
-const char* get_best_isa() {
+const char* get_best_isa(void) {
     CpuFeatures f = get_supported_isa();
 
     if (f.avx512f) return "/arch:AVX512";
@@ -138,7 +138,32 @@ FILE* fopen_cross(const char *restrict path, const char *restrict mode) {
     #endif
 }
 
+i32 strcasecmp_cross(const char *restrict s1, const char *restrict s2) {
+    #ifdef _MSC_VER
+    return _stricmp(s1, s2);
+
+    #else
+    return strcasecmp(s1, s2);
+
+    #endif
+}
+
+i32 strncasecmp_cross(const char *restrict s1, const char *restrict s2, const usize char_count) {
+    #ifdef _MSC_VER
+    return _strnicmp(s1, s2, char_count);
+    
+    #else
+    return strncasecmp(s1, s2, char_count);
+
+    #endif
+}
+
 i32 strcat_cross(char *restrict dest, usize dest_size, const char *restrict src) {
+    if (dest == NULL || src == NULL) {
+        LOG_ERROR("%s", "Can't concatenate strings, source or destination was NULL!");
+        return -1;
+    }
+
     #ifdef _MSC_VER
     errno_t result = strcat_s(dest, dest_size, src);
     return (i32)result;
@@ -156,7 +181,7 @@ i32 strcat_cross(char *restrict dest, usize dest_size, const char *restrict src)
     #endif
 }
 
-i32 create_test_file() {
+i32 create_test_file(void) {
     FILE *f = fopen_cross("test.c", "w");
     if (f != NULL) {
         fprintf(f, "int main(void) { return 0; }\n");

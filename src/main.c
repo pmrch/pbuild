@@ -71,7 +71,7 @@ i32 main(i32 argc, const char **argv) {
 
     char *compilation_flags = join_cflags(*opts, *cfg);
     normalize_whitespaces(compilation_flags);
-    fprintf(stderr, "Final compilation command: %s\n", compilation_flags);
+    LOG_VERBOSE("\nFinal compilation command: %s\n", compilation_flags);
 
     char *linker_flags = construct_ldflags(opts, *cfg);
     normalize_whitespaces(linker_flags);

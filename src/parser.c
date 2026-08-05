@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if !defined(_MSC_VER)
+#ifndef _MSC_VER
 #include <dirent.h>
 #endif
 
@@ -12,6 +12,11 @@
 #include "log.h"
 
 Compiler pair_compiler(const char *compiler) {
+    if (compiler == NULL || *compiler == '\0') {
+        LOG_ERROR("%s", "Compiler value was parsed as NULL, cannot pair!");
+        return (Compiler){ .cc=NULL, .cxx=NULL };
+    }
+
     if (strcmp(compiler, "gcc") == 0) { return (Compiler){ .cc="gcc", .cxx="g++" }; }
     if (strcmp(compiler, "clang") == 0) { return (Compiler){ .cc="clang", .cxx="clang++" }; }
     if (strcmp(compiler, "cl") == 0) { return (Compiler){ .cc="cl.exe", .cxx="cl.exe" }; }
@@ -19,31 +24,57 @@ Compiler pair_compiler(const char *compiler) {
     if (strcmp(compiler, "clang++") == 0) { return (Compiler){ .cc="clang", .cxx="clang++" }; }
     if (strcmp(compiler, "g++") == 0) { return (Compiler){ .cc="gcc", .cxx="g++" }; }
 
-    LOG_WARN("%s", "Compiler was not defined! Returning empty strings");
+    LOG_WARN("%s", "Compiler was not defined! Returning NULL values!");
     return (Compiler){ .cc=NULL, .cxx=NULL };
 }
 
 static bool is_compiler_valid(const char *str) {
-    const char* const valid_compilers[] = { "gcc", "clang", "cl", "g++", "clang++" };
+    if (str == NULL || *str == '\0') {
+        LOG_ERROR("%s", "Cannot validate compiler as NULL value was passed!");
+        return false;
+    }
+
+    const char* const valid_compilers[] = { "gcc", "clang", "clang-cl", "cl", "g++", "clang++" };
     for (usize i = 0; i < sizeof(valid_compilers) / sizeof(valid_compilers[0]); i++) {
         if (strncmp(str, valid_compilers[i], strlen(valid_compilers[i])) == 0) {
             return true;
         }
     }
 
+    LOG_ERROR("Invalid compiler provided: <%s>", str);
     return false;
 }
 
 static void set_strictness(char *restrict strictness, CompilerOptions *opts) {
+    if (opts == NULL) {
+        LOG_ERROR("%s", "Couldn't set strictness level, opts was NULL!");
+        return;
+    }
+
+    if (strictness == NULL || *strictness == '\0') {
+        LOG_ERROR("%s", "Couldn't set strictness level, NULL was passed!");
+        return;
+    }
+
     opts->strictness = validate_strictness(strictness);
     opts->strictness_set = true;
 }
 
 static void set_config(char *restrict config, CompilerOptions *opts) {
+    if (opts == NULL) {
+        LOG_ERROR("%s", "Cannot set build type, since opts was NULL!");
+        return;
+    }
+
+    if (config == NULL || *config == '\0') {
+        LOG_ERROR("%s", "Cannot set build type, since config was NULL!");
+        return;
+    }
+
     if (strncmp(config, "release", 7) == 0) { opts->config = Release; } 
     else if (strncmp(config, "debug", 5) == 0) { opts->config = Debug; } 
     else {
-        LOG_WARN("Invalid config value '%s' provided, defaulting to Release build", config);
+        LOG_WARN("Invalid config value '%s' provided, defaulting to optimized release build", config);
         opts->config = Release;
     }
 
@@ -51,11 +82,19 @@ static void set_config(char *restrict config, CompilerOptions *opts) {
 }
 
 static void set_compiler(char *restrict compiler, CompilerOptions *opts) {
+    if (opts == NULL) {
+        LOG_ERROR("%s", "Cannot set build type, since opts was NULL!");
+        return;
+    }
+
     if (!is_compiler_valid(compiler)) {
         LOG_WARN("Invalid compiler '%s' provided, using system default", compiler);
 
-        #ifdef _MSC_VER
-        opts->compiler = (Compiler){ .cc="cl.exe", .cxx="cl.exe" };
+        #if defined(_MSC_VER) && defined(__clang__)
+        opts->compiler = (Compiler){ .cc="clang-cl.exe", .cxx="clang-cl.exe" };
+
+        #elif defined(_MSC_VER) && !defined(__clang__)
+        opts->compiler = (Compiler){ .cc="cl.exe", .cxx="cl.exe" }
 
         #elif defined(__clang__)
         opts->compiler = (Compiler){ .cc="clang", .cxx="clang++" };
@@ -72,8 +111,12 @@ static void set_compiler(char *restrict compiler, CompilerOptions *opts) {
 }
 
 static void set_lang(char *restrict lang, CompilerOptions *opts) {
-    if (strlen(lang) > 3) {
-        LOG_WARN("Invalid --lang value '%s'", lang);
+    if (opts == NULL) {
+
+    }
+
+    if (lang == NULL || *lang == '\0' || strlen(lang) > 3) {
+        opts->lang_set = false;
         return;
     }
 
@@ -85,7 +128,7 @@ static void set_lang(char *restrict lang, CompilerOptions *opts) {
     if (is_cpp) { opts->lang = Cpp; }
     else if (is_c) { opts->lang = C; }
     else {
-        LOG_WARN("%s", "Neither C nor C++ was provided in any accepted form, defaulting to C");
+        LOG_WARN("Invalid --lang value <%s>, defaulting to C", lang);
         opts->lang = C;
     }
 
@@ -94,7 +137,18 @@ static void set_lang(char *restrict lang, CompilerOptions *opts) {
 
 // Expects a path that contains the dynamically or statically linkable
 // mimalloc library .a/.so/.lib file(s)
-static void set_mimalloc(char *restrict path, CompilerOptions *opts) {
+static void set_mimalloc(char *restrict path, CompilerOptions *opts, char **argv_clone) {
+    if (path == NULL) {
+
+    }
+
+    if (opts->use_system_mimalloc) {
+        LOG_ERROR("%s", "--with-system-mimalloc and --with-mimalloc are incompatible, only one of them can be specified, or just simply neither");
+        free_mutable_cloned_string_array(argv_clone);
+        free(opts);
+        return;
+    }
+
     LOG_DEBUG("Setting mimalloc up with path <%s>", path);
     if (!is_path_valid(path)) {
         LOG_WARN("Provided path <%s> was invalid! Can't look for mimalloc.", path);
@@ -102,8 +156,9 @@ static void set_mimalloc(char *restrict path, CompilerOptions *opts) {
         return;
     }
 
-    opts->mimalloc_lib_path = strdup_cross(path);
     opts->use_system_mimalloc = false;
+    opts->mimalloc_lib_path = strdup_cross(path);
+    free(path);
 }
 
 CompilerOptions* parse_compiler_flags(const int argc, const char **argv) {
@@ -135,16 +190,8 @@ CompilerOptions* parse_compiler_flags(const int argc, const char **argv) {
         }
 
         if (strncmp(*argv_p, "--with-mimalloc=", 16) == 0 && opts->mimalloc_lib_path == NULL) {
-            LOG_INFO("Received mimalloc path <%s>", original_casing);
-            if (!opts->use_system_mimalloc) {
-                set_mimalloc(original_casing, opts);
-                free(original_casing);
-            } else {
-                LOG_ERROR("%s", "--with-system-mimalloc and --with-mimalloc are incompatible, only one of them can be specified, or just simply neither");
-                free_mutable_cloned_string_array(argv_clone);
-                free(opts);
-                return NULL;
-            }
+            LOG_DEBUG("Received mimalloc path <%s>", original_casing);
+            set_mimalloc(original_casing, opts, argv_clone);
         }
 
         if (strncmp(*argv_p, "--strictness=", 13) == 0 && !opts->strictness_set) {

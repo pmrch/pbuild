@@ -11,7 +11,12 @@
 #include "log.h"
 
 Strictness validate_strictness(const char* level_str) {
-    char *end;
+    if (level_str == NULL || *level_str == '\0') {
+        LOG_ERROR("%s", "Couldn't validate strictness as NULL or empty value was passed! Defaulting to Moderate linting");
+        return Moderate;
+    }
+
+    char *end = NULL;
 
     errno = 0;
     long level = strtol(level_str, &end, 10);

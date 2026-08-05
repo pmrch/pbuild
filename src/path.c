@@ -14,7 +14,7 @@
 #include <ctype.h>
 
 // Returned buffer is malloc()'d by _getcwd(), so caller must free() it
-static char* get_cwd_win() {
+static char* get_cwd_win(void) {
     char *buffer = _getcwd(NULL, PATH_MAX);
     if (buffer == NULL) {
         LOG_ERROR("Failed to get current working directory!");
@@ -75,7 +75,7 @@ static bool is_path_valid_win(char *path) {
 #include <unistd.h>
 
 // Returned buffer is malloc()'d by getcwd(), so caller must free() it
-static char* get_cwd_unix() {
+static char* get_cwd_unix(void) {
     char *buffer = (char*)malloc(PATH_MAX);
     if (buffer == NULL || getcwd(buffer, PATH_MAX) == NULL) {
         LOG_ERROR("%s", "Failed to get current working directory!");
@@ -123,7 +123,7 @@ static bool is_path_valid_unix(char *path) {
 
 // Returned buffer is malloc()'d by the platform's compatible getcwd(), 
 // so caller must free() it
-char* get_cwd() {
+char* get_cwd(void) {
     #ifdef _MSC_VER
     return get_cwd_win();
     

@@ -1,0 +1,5 @@
+Diagnostics:
+  Suppress:
+    - empty-translation-unit
+    - unused-macro
+    - -Wunused-macros
