@@ -14,7 +14,7 @@
 Compiler pair_compiler(const char *compiler) {
     if (compiler == NULL || *compiler == '\0') {
         LOG_ERROR("%s", "Compiler value was parsed as NULL, cannot pair!");
-        return (Compiler){ .cc=NULL, .cxx=NULL };
+        return INVALID_COMPILER;
     }
 
     if (strcmp(compiler, "gcc") == 0) { return (Compiler){ .cc="gcc", .cxx="g++" }; }
@@ -25,7 +25,7 @@ Compiler pair_compiler(const char *compiler) {
     if (strcmp(compiler, "g++") == 0) { return (Compiler){ .cc="gcc", .cxx="g++" }; }
 
     LOG_WARN("%s", "Compiler was not defined! Returning NULL values!");
-    return (Compiler){ .cc=NULL, .cxx=NULL };
+    return INVALID_COMPILER;
 }
 
 static bool is_compiler_valid(const char *str) {
@@ -112,7 +112,7 @@ static void set_compiler(char *restrict compiler, CompilerOptions *opts) {
 
 static void set_lang(char *restrict lang, CompilerOptions *opts) {
     if (opts == NULL) {
-
+        
     }
 
     if (lang == NULL || *lang == '\0' || strlen(lang) > 3) {
@@ -138,14 +138,9 @@ static void set_lang(char *restrict lang, CompilerOptions *opts) {
 // Expects a path that contains the dynamically or statically linkable
 // mimalloc library .a/.so/.lib file(s)
 static void set_mimalloc(char *restrict path, CompilerOptions *opts, char **argv_clone) {
-    if (path == NULL) {
-
-    }
-
     if (opts->use_system_mimalloc) {
         LOG_ERROR("%s", "--with-system-mimalloc and --with-mimalloc are incompatible, only one of them can be specified, or just simply neither");
-        free_mutable_cloned_string_array(argv_clone);
-        free(opts);
+        FREE_ALL(TO_FREE(argv_clone, free_mutable_cloned_string_array), TO_DFREE(path));
         return;
     }
 
@@ -170,7 +165,7 @@ CompilerOptions* parse_compiler_flags(const int argc, const char **argv) {
 
     char **argv_clone = clone_string_array_mutable(argv, (usize)argc);
     if (argv_clone == NULL) {
-        free(opts);
+        FREE_ALL(TO_DFREE(opts->mimalloc_lib_path), TO_DFREE(opts));
         return NULL;
     }
 
@@ -180,14 +175,16 @@ CompilerOptions* parse_compiler_flags(const int argc, const char **argv) {
     // Pre-increment to skip first argument which is the executable name itself
     while (*++argv_p != NULL) {
         strip_quotes(*argv_p);
-
-        char *value = strrchr(*argv_p, '=');
-        char *original_casing = strdup_cross(++value);
-        
-        if (value != NULL) { to_lowercase(value); }
         if (strncmp(*argv_p, "--with-system-mimalloc", 22) == 0 && !opts->use_system_mimalloc) {
             opts->use_system_mimalloc = true;
+            continue;
         }
+
+        char *value = strrchr(*argv_p, '=');
+        if (value == NULL || *value == '\0') { continue; }
+
+        char *original_casing = strdup_cross(++value);
+        to_lowercase(value);
 
         if (strncmp(*argv_p, "--with-mimalloc=", 16) == 0 && opts->mimalloc_lib_path == NULL) {
             LOG_DEBUG("Received mimalloc path <%s>", original_casing);

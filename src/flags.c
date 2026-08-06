@@ -49,7 +49,7 @@ static void strcat_with_space(char *restrict dest, usize dest_size, const char *
 static char* get_compiler(const CompilerOptions opts, const CompilerConfig cfg) {
     char *compiler = NULL;
     
-    if (opts.compiler_set && *opts.compiler.cc != '\0' && *opts.compiler.cxx != '\0') {
+    if (opts.compiler_set && opts.compiler.cc != NULL && opts.compiler.cxx != NULL) {
         if (opts.lang_set) {
             if (opts.lang == Cpp) { compiler = strdup_cross(opts.compiler.cxx); } 
             else { compiler = strdup_cross(opts.compiler.cc); }

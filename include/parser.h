@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include "utils.h"
 
+#define INVALID_COMPILER ((Compiler){ .cc=NULL, .cxx=NULL })
+
 typedef struct {
     const char *cc;
     const char *cxx;

@@ -66,8 +66,8 @@ def compile_and_link(level: str | None) -> Optional[bool]:
         })
         
         try:
-            result = subprocess.run(args, cwd=cwd, capture_output=False, check=True, text=True)
-            log.info(f"Compiled src/{result.stdout.strip() if result.stdout else source_file} => build/{obj_name}")
+            result = subprocess.run(args, cwd=cwd, capture_output=True, check=True, text=True)
+            log.info(f"Compiled src/{result.stdout.strip() if result.stdout != "" else f'{src_path.stem}.c'} => build/{obj_name}")
         except Exception as e:
             log.error(f"Failed to compile {src_path.name} due to error: {e}")
             return True
@@ -80,7 +80,7 @@ def compile_and_link(level: str | None) -> Optional[bool]:
     link_args: list[str] = [LINK] + LDFLAGS.split() + [f"/out:{TARGET}.exe"] + objects.split()
 
     try:
-        _ = subprocess.run(link_args, cwd=cwd, capture_output=False, check=True)
+        _ = subprocess.run(link_args, cwd=cwd, capture_output=True, check=True)
         log.info("Finished linking successfully")
     except Exception as e:
         log.error(f"Linking has failed due to error: {e}")

@@ -8,9 +8,6 @@
 #include "config.h"
 #include "parser.h"
 
-#define TO_FREE(obj, func) (&(ToFree){ obj, func != NULL ? (Destructor)(void*)func : free})
-#define TO_FREE_DEF(obj) (&(ToFree){ obj, free })
-
 static i32 verify_arguments(const char *restrict const *argv, const i32 argc) {
     LOG_DEBUG("Verifying command line arguments, found %d args", argc - 1);
     if (argc == 1) { return 0; }
@@ -37,7 +34,7 @@ static i32 verify_arguments(const char *restrict const *argv, const i32 argc) {
     }
 
     if (invalid_flags != NULL && invalid_flags[0] != NULL && *invalid_flags[0] != '\0') {
-        LOG_DEBUG("First invalid flag is %s", invalid_flags[0]);
+        LOG_DEBUG("Found invalid argument <%s>", invalid_flags[0]);
     }
 
     LOG_VERBOSE("Freeing invalid flags buffer at <%p>", (void*)invalid_flags);
@@ -61,12 +58,10 @@ i32 main(i32 argc, const char **argv) {
     LOG_DEBUG("Got current working directory <%s>", cwd);
     LOG_VERBOSE("Current working directory is at: <%p>", (void*)cwd);
 
-    if (verify_arguments(argv, argc) != 0) { goto cleanup; }
     CompilerOptions *opts = parse_compiler_flags(argc, argv);
-
-    if (opts == NULL || cfg == NULL) {
-        LOG_ERROR("%s", "Failed to setup options!");
-        goto cleanup;
+    if (opts == NULL || cfg == NULL || verify_arguments(argv, argc) != 0) {
+        LOG_ERROR("%s", "Failed to setup options and default config!");
+        return(FREE_ALL(TO_FREE(cfg, free_compiler_config), TO_DFREE(cwd), TO_DFREE(opts)));
     }
 
     char *compilation_flags = join_cflags(*opts, *cfg);
@@ -77,18 +72,10 @@ i32 main(i32 argc, const char **argv) {
     normalize_whitespaces(linker_flags);
     fprintf(stderr, "Final linker command: %s\n", linker_flags);
 
-    LOG_VERBOSE("Freeing compilation flags at: <%p>", (void*)compilation_flags);
-    free(compilation_flags);
+    FREE_ALL(
+        TO_FREE(cfg, free_compiler_config), TO_DFREE(cwd), TO_DFREE(compilation_flags), TO_DFREE(linker_flags), 
+        TO_DFREE(opts->mimalloc_lib_path),  TO_DFREE(opts)
+    );
 
-    LOG_VERBOSE("Freeing linker flags at: <%p>", (void*)linker_flags);
-    free(linker_flags);
-
-    LOG_VERBOSE("Freeing CompilerOptions at: <%p>", (void*)opts);
-    free(opts->mimalloc_lib_path);
-    free(opts);
-
-    goto cleanup;
-    cleanup:
-        free_all(2, TO_FREE(cfg, free_compiler_config), TO_FREE_DEF(cwd));
-        return 0;
+    return 0;
 }

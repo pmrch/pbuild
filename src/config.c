@@ -96,6 +96,7 @@ CompilerConfig* new_config(const char *project_name) {
     if (project_name == NULL) {
         char *path = get_cwd();
         cfg_base->target = get_basename(path);
+        free(path);
     } else { 
         cfg_base->target = strdup_cross(project_name); 
     }
@@ -128,6 +129,11 @@ CompilerConfig* new_config(const char *project_name) {
 }
 
 void free_compiler_config(CompilerConfig *cfg) {
+    if (cfg == NULL) {
+        LOG_WARN("%s", "Not freeing CompilerConfig, was NULL!");
+        return;
+    }
+
     LOG_DEBUG("Freeing CompilerConfig at <%p>", (void*)cfg);
     if (cfg->target != NULL) { 
         LOG_VERBOSE("Freeing compiler target at: <%p>", (void*)cfg->target);

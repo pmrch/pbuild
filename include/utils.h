@@ -44,8 +44,21 @@ typedef struct {
 
 typedef struct {
     void       *obj;
+    const char *name;
     Destructor func;
 } ToFree;
+
+// ===========================================
+// =        Shared Macro Definitions         =
+// ===========================================
+#define TO_FREE(obj, func) ((ToFree){ obj, #obj, func != NULL ? (Destructor)(void*)func : free})
+#define TO_DFREE(obj) ((ToFree){ obj, #obj, free })
+
+#define FREE_ALL(...)   \
+    free_all_no_vargs(  \
+        (ToFree[]){__VA_ARGS__}, \
+        sizeof((ToFree[]){__VA_ARGS__}) / sizeof(ToFree)  \
+    )
 
 // ===========================================
 // =        Windows CPU intrinsics           =
@@ -65,8 +78,9 @@ const char* get_best_isa(void);
 // =        General Shared Utility           =
 // ===========================================
 
-// Splits string, returns array pointer and number of elements
-SplitString *split(const char *str, i32 chr);
+// Returns a newly allocated SplitString.
+// The caller owns the returned object and must call free_split().
+SplitString* split(const char *str, i32 chr);
 
 // Frees all heap-allocated strings of a heap-allocated buffer, 
 // and the buffer itself
@@ -74,8 +88,6 @@ void free_mutable_cloned_string_array(char **arr);
 
 // If a sequence of whitespace is found, they get reduced to a singular whitespace
 void normalize_whitespaces(char *restrict s);
-
-void free_all(const usize count, ...);
 void to_lowercase(char *restrict str);
 void strip_quotes(char *restrict s);
 void free_split(SplitString* ss);
@@ -86,6 +98,8 @@ char** clone_string_array_mutable(const char **arr, usize num_elem);
 FILE* fopen_cross(const char *restrict path, const char *restrict mode);
 
 i32 create_test_file(void);
+i32 free_all(const usize count, ...);
+i32 free_all_no_vargs(ToFree objects[], const usize count);
 i32 strcat_cross(char *restrict dest, size_t dest_size, const char *restrict src);
 
 i32 strcasecmp_cross(const char *restrict s1, const char *restrict s2);

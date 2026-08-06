@@ -65,7 +65,7 @@ const char* get_best_isa(void) {
 }
 #endif
 
-SplitString *split(const char *str, i32 chr) {
+SplitString* split(const char *str, i32 chr) {
     if (str == NULL) {
         LOG_ERROR("%s", "Cannot split string, provided NULL!");
         return NULL;
@@ -75,28 +75,39 @@ SplitString *split(const char *str, i32 chr) {
     if (ss == NULL) {
         LOG_ERROR("%s", "Failed to allocate memory for string split destination!");
         return NULL;
-    } else {
-        ss->strings = (char**)malloc(strlen(str) + 1);
-        if (ss->strings == NULL) {
-            LOG_ERROR("%s", "Failed to allocate string array within SplitString");
-            free(ss);
-            return NULL;
-        }
-
-        ss->num_split = 0;
     }
 
-    const char *ptr = str;
-    while (*ptr != '\0') {
-        char *first_member = strchr(ptr, chr);
-        if (first_member == NULL) {
-            LOG_ERROR("%s", "The string cannot be split, no breakpoint at given character");
-            return NULL;
-        }
+    ss->strings = (char**)malloc(sizeof(char*) * (strlen(str) + 1));
+    if (ss->strings == NULL) {
+        LOG_ERROR("%s", "Failed to allocate string array within SplitString");
+        free(ss);
+        return NULL;
+    }
 
-        usize first_member_len = strlen(first_member);
-        ss->strings[ss->num_split] = strdup_cross(first_member);
-        ptr += (first_member_len + 1);
+    ss->num_split = 0;
+    const char *ptr = str;
+
+    while (*ptr != '\0') {
+        // Gets the first occurance of the delimiter in the string
+        // For example in <libsobium.so.2.1>, points at first dot, leaves <.so.2.1>
+        // here pointer delim is <libsobium> away from the start
+        char *delim = strchr(ptr, chr);
+        if (delim != NULL) {
+            usize token_len = (usize)(delim - ptr);
+            char *token = (char*)malloc(token_len + 1);
+
+            if (token == NULL) {
+                LOG_ERROR("%s", "Failed to allocate memory for the base filename!");
+                free(ss);
+                return NULL;
+            }
+
+            memcpy(token, ptr, token_len);
+            token[token_len] = '\0';
+
+            ss->strings[ss->num_split] = token;
+            ptr = (delim + 1);
+        }
     }
 
     return ss;
@@ -205,7 +216,7 @@ i32 create_test_file(void) {
     return -1;
 }
 
-void free_all(const usize count, ...) {
+i32 free_all(const usize count, ...) {
     va_list args;
     va_start(args, count);
     
@@ -213,11 +224,26 @@ void free_all(const usize count, ...) {
         ToFree *obj = va_arg(args, ToFree*);
         if (obj == NULL) { continue; }
 
-        Destructor func = obj->func != NULL ? obj->func : free; 
+        Destructor func = obj->func != NULL ? obj->func : free;
+        LOG_VERBOSE("Freeing pointer for <%s> at <%p>", obj->name, (void*)obj->obj);
         func(obj->obj);
     }
 
     va_end(args);
+    return 0;
+}
+
+i32 free_all_no_vargs(ToFree objects[], const usize count) {
+    for (usize i = 0; i < count; i++) {
+        ToFree obj = objects[i];
+        Destructor func = obj.func != NULL ? obj.func : free;
+
+        if (obj.obj == NULL) { continue; }
+        LOG_VERBOSE("Freeing pointer for <%s> at <%p>", obj.name, (void*)obj.obj);
+        func(obj.obj);
+    }
+
+    return 0;
 }
 
 void free_split(SplitString* ss) {
