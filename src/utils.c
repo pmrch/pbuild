@@ -1,4 +1,6 @@
 #ifndef _MSC_VER
+#include <strings.h>
+
 #define _POSIX_C_SOURCE 200809L
 #endif
 
@@ -7,7 +9,6 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <strings.h>
 
 #include "utils.h"
 #include "log.h"
