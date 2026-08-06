@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include "utils.h"
 
+#undef bool
+#define bool _Bool
+
 #define INVALID_COMPILER ((Compiler){ .cc=NULL, .cxx=NULL })
 
 typedef struct {

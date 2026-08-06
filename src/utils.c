@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <strings.h>
 
 #include "utils.h"
 #include "log.h"

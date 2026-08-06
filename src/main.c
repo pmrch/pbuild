@@ -61,7 +61,7 @@ i32 main(i32 argc, const char **argv) {
     CompilerOptions *opts = parse_compiler_flags(argc, argv);
     if (opts == NULL || cfg == NULL || verify_arguments(argv, argc) != 0) {
         LOG_ERROR("%s", "Failed to setup options and default config!");
-        return(FREE_ALL(TO_FREE(cfg, free_compiler_config), TO_DFREE(cwd), TO_DFREE(opts)));
+        return(FREE_ALL(TO_FREE(cfg, free_compiler_config), TO_DFREE(cwd), TO_DFREE(opts->mimalloc_lib_path), TO_DFREE(opts)));
     }
 
     char *compilation_flags = join_cflags(*opts, *cfg);

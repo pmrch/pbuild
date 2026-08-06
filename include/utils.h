@@ -51,7 +51,18 @@ typedef struct {
 // ===========================================
 // =        Shared Macro Definitions         =
 // ===========================================
-#define TO_FREE(obj, func) ((ToFree){ obj, #obj, func != NULL ? (Destructor)(void*)func : free})
+#if (defined(__GLIBC__) || defined(__BSD___) || defined(__APPLE__)) && !defined(__clang__)
+    // Function pointer casting compatibility layer:
+    // - clang (any libc): requires (void*) intermediate cast
+    // - gcc + musl: accepts (void*) intermediate cast  
+    // - gcc + glibc/BSD/Apple: requires direct cast, chokes on (void*) intermediate
+    // In short: (void*) works everywhere EXCEPT gcc + glibc/BSD/Apple
+    // (learned the hard way, has nothing to do with libc despite appearances)
+    #define TO_FREE(obj, func) ((ToFree){ obj, #obj, func != NULL ? (Destructor)func : free})
+#elif defined(__clang__) || !defined(__GLIBC__)
+    #define TO_FREE(obj, func) ((ToFree){ obj, #obj, func != NULL ? (Destructor)(void*)func : free})
+#endif
+
 #define TO_DFREE(obj) ((ToFree){ obj, #obj, free })
 
 #define FREE_ALL(...)   \

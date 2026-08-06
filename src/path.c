@@ -25,14 +25,14 @@ static char* get_cwd_win(void) {
 }
 
 
-static bool is_path_valid_win(char *path) {
+static bool is_path_valid_win(const char *path) {
     bool starts_correctly = isalpha((int)(path[0])) && path[1] == ':' && path[2] == '\\';
     if (path == NULL || *path == '\0' || !starts_correctly) {
         LOG_DEBUG("%s", "Path doesn't start correctly!");
         return false;
     }
 
-    char *ptr = path;
+    const char *ptr = path;
     usize num_backslashes = 0;
     usize dir_depth = 0;
 
@@ -85,10 +85,10 @@ static char* get_cwd_unix(void) {
     return buffer;
 }
 
-static bool is_path_valid_unix(char *path) {
+static bool is_path_valid_unix(const char *path) {
     if (path[0] != '/') { return false; }
 
-    char *ptr = path;
+    const char *ptr = path;
     usize num_slashes = 0;
     usize dir_depth = 0;
 
@@ -163,10 +163,10 @@ bool is_path_valid(const char *path) {
     }
 
     #ifdef _MSC_VER
-    return is_path_valid_win(strdup_cross(path));
+    return is_path_valid_win(path);
     
     #else
-    return is_path_valid_unix(strdup_cross(path));
+    return is_path_valid_unix(path);
 
     #endif
 }

@@ -11,7 +11,7 @@ STRICT_FLAGS_GCC = -Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wmaybe-unin
 	-Wold-style-definition -Wredundant-decls -Wshadow -Wundef -Wformat=2 -Wformat-security \
 	-Wwrite-strings -Wvla -Wdouble-promotion -Wfloat-equal -Wswitch-enum -Wswitch-default \
 	-Wunused -Wunused-function -Wunused-variable -Wunused-parameter -Wduplicated-cond \
-	-Wduplicated-branches -Wlogical-op -Wno-padded -Wno-declaration-after-statement 
+	-Wduplicated-branches -Wlogical-op -Wno-padded -Wno-declaration-after-statement -Wno-keyword-macro
 
 STRICT_FLAGS_CLANG = -Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wold-style-definition          \
 	-Wsign-conversion -Wcast-align -Wcast-qual -Wstrict-aliasing=2 -Wpointer-arith -Warray-bounds      \
@@ -19,13 +19,13 @@ STRICT_FLAGS_CLANG = -Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wold-styl
 	-Wshadow -Wundef -Wformat=2 -Wformat-security -Wwrite-strings -Wdouble-promotion -Wfloat-equal     \
 	-Wswitch-enum -Wswitch-default -Wunused -Wunused-function -Wunused-variable -Wunused-parameter     \
 	-Wno-padded -Wno-declaration-after-statement -Weverything -Wno-jump-misses-init -Wno-unsafe-buffer-usage \
-	-Wno-disabled-macro-expansion -Wno-unknown-warning-option -Wno-unused-macros
+	-Wno-disabled-macro-expansion -Wno-unknown-warning-option -Wno-unused-macros -Wno-keyword-macro
 
 # Combine with standard flags and optimization
-CFLAGS = -std=c23 $(STRICT_FLAGS_CLANG) -Iinclude -MMD -MP -O3 #-O3 -march=native -flto -ffast-math
+CFLAGS = -std=c23 $(STRICT_FLAGS_CLANG) -Iinclude -MMD -MP -O0 -fsanitize=address -g -DLOG_LEVEL=5  #-O3 -march=native -flto -ffast-math
 
 # Linker flags (for libraries)
-LDFLAGS = -flto
+LDFLAGS = -flto -fsanitize=address
 
 # Target definition
 SRC := $(shell find src -name '*.c')
@@ -56,6 +56,7 @@ build/tests/%: tests/%.c $(filter-out build/src/main.o, $(OBJ))
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 test: $(TEST_BIN)
+	@mkdir -p tests
 	@echo "Runnin all automated tests..."
 	@for t in $(TEST_BIN); do \
 		echo "==============================================="; \

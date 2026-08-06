@@ -7,6 +7,9 @@
 
 #include <stdbool.h>
 
+#undef bool
+#define bool _Bool
+
 // Returned buffer is malloc()'d by the platform's compatible getcwd(),
 // so caller must free() it
 char* get_cwd(void);
