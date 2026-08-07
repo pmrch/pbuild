@@ -13,7 +13,7 @@ STRICT_FLAGS_GCC = -Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wmaybe-unin
 	-Wunused -Wunused-function -Wunused-variable -Wunused-parameter -Wduplicated-cond \
 	-Wduplicated-branches -Wlogical-op -Wno-padded -Wno-declaration-after-statement -Wno-keyword-macro
 
-STRICT_FLAGS_CLANG = -Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wold-style-definition          \
+STRICT_FLAGS_CLANG = -Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wold-style-definition           \
 	-Wsign-conversion -Wcast-align -Wcast-qual -Wstrict-aliasing=2 -Wpointer-arith -Warray-bounds      \
 	-Wnull-dereference -Wmissing-prototypes -Wstrict-prototypes -Wconversion -Wredundant-decls -Wvla   \
 	-Wshadow -Wundef -Wformat=2 -Wformat-security -Wwrite-strings -Wdouble-promotion -Wfloat-equal     \
@@ -62,7 +62,7 @@ test: $(TEST_BIN)
 		echo "==============================================="; \
 		./$$t || exit 1; \
 	done
-	
+
 clean:
 	rm -f $(TARGET)
 	rm -rf compile_commands.json
@@ -72,4 +72,5 @@ all: compile_commands $(TARGET)
 
 .PHONY: clean test print-version all compile_commands
 compile_commands:
+	mkdir -p tests
 	bear -- make
