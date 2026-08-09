@@ -16,10 +16,10 @@
 
 #include "path.h"
 
-static bool is_mimalloc_available_win(const CompilerOptions *opts) {
-    if (opts != NULL && opts->mimalloc_lib_path != NULL && *opts->mimalloc_lib_path != '\0') {
+static bool is_mimalloc_available_win(const CompilerOptions opts) {
+    if (opts.mimalloc_lib_path != NULL && *opts.mimalloc_lib_path != '\0') {
         WIN32_FIND_DATAA findData;
-        HANDLE dirHandle = FindFirstFileA(opts->mimalloc_lib_path, &findData);
+        HANDLE dirHandle = FindFirstFileA(opts.mimalloc_lib_path, &findData);
 
         // Previous step has already confirmed whether it is a valid directory, skipping here
         do {
@@ -37,7 +37,7 @@ static bool is_mimalloc_available_win(const CompilerOptions *opts) {
             // If it starts with mimalloc and is a .lib or .dll, return true
             if (hasMimalloc && isLibFile) {
                 char buf[PATH_MAX] = { 0 };
-                snprintf(buf, sizeof(buf), "%s\\%s", opts->mimalloc_lib_path, findData.cFileName);
+                snprintf(buf, sizeof(buf), "%s\\%s", opts.mimalloc_lib_path, findData.cFileName);
 
                 FindClose(dirHandle);
                 return true; 
@@ -64,15 +64,15 @@ static bool is_mimalloc_available_win(const CompilerOptions *opts) {
 #include <dirent.h>
 #include <errno.h>
 
-static bool is_mimalloc_available_unix(const CompilerOptions *opts) {
-    if (opts == NULL || opts->mimalloc_lib_path == NULL || *opts->mimalloc_lib_path == '\0') {
-        LOG_ERROR("%s", "");
+static bool is_mimalloc_available_unix(const CompilerOptions opts) {
+    if (opts.mimalloc_lib_path == NULL || *opts.mimalloc_lib_path == '\0') {
+        LOG_ERROR("%s", "Cannot check the presence of mimalloc, lib path provided was NULL!");
         return false;
     }
 
-    DIR *dir = opendir(opts->mimalloc_lib_path);
+    DIR *dir = opendir(opts.mimalloc_lib_path);
     if (dir == NULL) {
-        LOG_ERROR("Failed to open mimalloc library directory at <%s>!", opts->mimalloc_lib_path);
+        LOG_ERROR("Failed to open mimalloc library directory at <%s>!", opts.mimalloc_lib_path);
         return false;
     }
 
@@ -96,7 +96,7 @@ static bool is_mimalloc_available_unix(const CompilerOptions *opts) {
     }
 
     if (entry == NULL && errno != 0) {
-        LOG_ERROR("An error occured reading the directory <%s>", opts->mimalloc_lib_path);
+        LOG_ERROR("An error occured reading the directory <%s>", opts.mimalloc_lib_path);
         closedir(dir);
         return false;
     }
@@ -113,7 +113,7 @@ static bool is_mimalloc_available_unix(const CompilerOptions *opts) {
 
 #endif
 
-bool is_mimalloc_available(const CompilerConfig cfg, const CompilerOptions *opts) {
+bool is_mimalloc_available(const CompilerConfig cfg, const CompilerOptions opts) {
     LOG_DEBUG("%s", "Entered is_mimalloc_available");
     (void)cfg;
 

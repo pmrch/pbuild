@@ -194,28 +194,36 @@ i32 strcat_cross(char *restrict dest, usize dest_size, const char *restrict src)
     #endif
 }
 
-i32 create_test_file(void) {
-    FILE *f = fopen_cross("test.c", "w");
-    if (f != NULL) {
-        fprintf(f, "int main(void) { return 0; }\n");
-        fclose(f);
-
-        return 0;
-    }
-
-    #ifndef _MSC_VER
-    if (system("touch test.c && echo \"int main(void) { return 0; }\" > test.c") == 0) {
-        return 0;
-    }
-
-    #else 
-    if (system("echo int main(void) { return 0; } > test.c") == 0) {
-        return 0;
-    }
-
+static void write_file_create_command(char *restrict buf, usize dest_size, const char *restrict str) {
+    #ifdef _MSC_VER
+        snprintf(buf, dest_size, "echo int main(void) { return 0; } > %s", str);
+    #else
+        snprintf(buf, dest_size, "echo \"int main(void) { return 0; }\" > %s", str);
     #endif
+}
 
-    return -1;
+i32 create_test_file(void) {
+    const char* const* ptr = (const char* const[]){ "test.c", "test.cpp", NULL };
+    
+    u32 good = 0;
+    char buf[100] = { 0 };
+
+    while (*ptr != NULL) {
+        FILE *f = fopen_cross(*ptr, "w");
+
+        if (f != NULL) {
+            fprintf(f, "int main(void) { return 0; }\n");
+            fclose(f);
+            ++good;
+        } else {
+            write_file_create_command(buf, sizeof(buf), *ptr);
+            if (system(buf) == 0) { ++good; }
+        }
+
+        ++ptr;
+    }
+
+    return good == 2 ? 0 : -1;
 }
 
 i32 free_all_no_vargs(ToFree objects[], const usize count) {
@@ -334,4 +342,9 @@ void free_mutable_cloned_string_array(char **arr) {
     }
 
     free(arr);
+}
+
+void cleanup_test() {
+    const char* const* ptr = (const char* const[]){ "test", "test.exe", "test.cpp", "test.c", "test.o", NULL };
+    while (*ptr != NULL) { remove(*ptr++); }
 }

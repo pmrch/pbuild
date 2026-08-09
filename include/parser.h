@@ -12,6 +12,7 @@
 typedef struct {
     const char *cc;
     const char *cxx;
+    bool  cpp_first;
 } Compiler;
 
 typedef struct {

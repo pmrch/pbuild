@@ -105,6 +105,9 @@ static void set_compiler(char *restrict compiler, CompilerOptions *opts) {
         #endif
     } else {
         opts->compiler = pair_compiler(compiler);
+
+        if (strcmp(opts->compiler.cxx, compiler) == 0) { opts->compiler.cpp_first = true; }
+        else { opts->compiler.cpp_first = false; }
     }
 
     opts->compiler_set = true;

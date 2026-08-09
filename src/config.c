@@ -1,64 +1,99 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "config.h"
+#include "parser.h"
 #include "utils.h"
 #include "path.h"
 #include "log.h"
 
 #ifndef _MSC_VER
-#define MAX_VERSION 23
 
 #include <stdio.h>
 #include <unistd.h>
 
-static void cleanup_test() {
-    remove("test");
-    remove("test.c");
-    remove("test.exe");
+static void write_test_command_c(char *restrict cmd, const usize ref_size, const Compiler compilers, const u32 version) {
+    #ifdef _WIN32 
+        snprintf(cmd, ref_size, "%s -std=c%u -c test.c -o test.exe > NUL 2>&1", compilers.cc, version);
+    #else
+        snprintf(cmd, ref_size, "%s -std=c%u -c test.c -o test.exe > /dev/null 2>&1", compilers.cc, version); 
+    #endif
 }
 
-static char* get_latest_std(const char *cc) {
-    if (cc == NULL) { return NULL; }
-    if (create_test_file() != 0) {
-        return strdup_cross("c99");
+static void write_test_command_cpp(char *restrict cmd, const usize ref_size, const Compiler compilers, const u32 version) {
+    #ifdef _WIN32 
+        snprintf(cmd, ref_size, "%s -std=c++%u -c test.cpp -o test.exe > NUL 2>&1", compilers.cxx, version);
+    #else
+        snprintf(cmd, ref_size, "%s -std=c++%u -c test.cpp -o test.exe > /dev/null 2>&1", compilers.cxx, version); 
+    #endif
+}
+
+static void write_default_ver_command(char *restrict cmd, const usize ref_size, const Compiler compilers) {
+    if (compilers.cpp_first) {
+        #ifndef _WIN32
+            snprintf(cmd, ref_size, "%s -std=c++11 -c test.cpp -o test > /dev/null 2>&1", compilers.cxx); 
+        #else
+            snprintf(cmd, ref_size, "%s -std=c++11 -c test.cpp -o test.exe > NUL 2>&1", compilers.cxx); 
+        #endif
+    } else {
+        #ifndef _WIN32
+            snprintf(cmd, ref_size, "%s -std=c++11 -c test.c -o test > /dev/null 2>&1", compilers.cc); 
+        #else
+            snprintf(cmd, ref_size, "%s -std=c++11 -c test.c -o test.exe > NUL 2>&1", compilers.cc);
+        #endif
+    }
+}
+
+static LangStd* get_latest_std(const Compiler compilers) {
+    if (compilers.cc == NULL || compilers.cxx == NULL) { return NULL; }
+    u32 MAX_VERSION = 23;
+    u32 step = 6;
+
+    if (compilers.cpp_first) {
+        MAX_VERSION = 26;
+        step = 3;
+    }
+    
+    LangStd *stds = (LangStd*)malloc(sizeof(LangStd));
+    if (stds == NULL) {
+        LOG_ERROR("%s", "Failed to allocate memory for LangStd struct!");
+        return NULL;
     }
 
-    unsigned int ref_size = sizeof("clang -std=c23 -c test.c -o test > /dev/null 2>&1");
-    unsigned int version = MAX_VERSION;
+    if (create_test_file() != 0) {
+        stds->cppstd = strdup_cross("c++11");
+        stds->cstd = strdup_cross("c99");
+        return stds;
+    }
 
+    u32 version = MAX_VERSION;
     char cmd[512];
-    char buf[4];
+    char buf[8];
 
     while (version >= 11 && version <= MAX_VERSION) {
-        #ifdef _WIN32
-        snprintf(cmd, ref_size, "%s -std=c%u -c test.c -o test.exe > NUL 2>&1", cc, version);
-        #else
-        snprintf(cmd, ref_size, "%s -std=c%u -c test.c -o test > /dev/null 2>&1", cc, version);
-        #endif
+        if (compilers.cpp_first) { write_test_command_cpp(cmd, sizeof(cmd), compilers, version); } 
+        else { write_test_command_c(cmd, sizeof(cmd), compilers, version); }
 
-        snprintf(buf, sizeof(buf), "c%u", version);
+        if (compilers.cpp_first) { snprintf(buf, sizeof(buf), "c%u", version); } 
+        else { snprintf(buf, sizeof(buf), "c++%u", version); }
+
         int res = system(cmd);
-        
         if (res == 0) {
             cleanup_test();
-            return strdup_cross(buf);
+            
+            if (compilers.cpp_first) { stds->cppstd = strdup_cross(buf); }
+            else { stds->cstd = strdup_cross(buf); }            
+            return stds;
         }
 
-        version -= 6;
+        version -= step;
     }
 
+    write_default_ver_command(cmd, sizeof(cmd), compilers);
     cleanup_test();
 
-    #ifdef _WIN32
-    snprintf(cmd, ref_size, "%s -std=c99 -c test.c -o test.exe > NUL 2>&1", cc);
-
-    #else
-    snprintf(cmd, ref_size, "%s -std=c99 -c test.c -o test > /dev/null 2>&1", cc);
-    
-    #endif
-
-    return system(cmd) == 0 ? strdup_cross("c99") : NULL;
+    return system(cmd) == 0 ? stds : NULL;
 }
 #endif
 
@@ -81,6 +116,17 @@ static const char *detect_compiler(void) {
 
     return gnu_version_works ? "gcc" : clang_version_works ? "clang" : NULL;
     #endif
+}
+
+void free_lang_std(LangStd *std) {
+    if (std == NULL) { return; }
+
+    // Fre children
+    free(std->cppstd);
+    free(std->cstd);
+
+    // Free parent
+    free(std);
 }
 
 CompilerConfig* new_config(const char *project_name) {
@@ -107,15 +153,39 @@ CompilerConfig* new_config(const char *project_name) {
     #ifdef _MSC_VER
     cfg_base->cc = compiler;
     cfg_base->std = strdup_cross("clatest");
+
+    #ifdef __clang__
+    cfg_base->link = "clang-cl.exe"
+
+    #else
     cfg_base->link = "link.exe";
+
+    #endif
 
     LOG_DEBUG("%s", "Detected platform: Windows");
     LOG_VERBOSE("Returning base CompilerConfig with address <%p>", (void*)cfg_base);
     return cfg_base;
 
     #else
-    char *std = get_latest_std(compiler);
-    cfg_base->std = std != NULL ? std : strdup_cross("c99");
+    Compiler compilers = pair_compiler(compiler);
+    LangStd *std = get_latest_std(compilers);
+
+
+    if (std == NULL) {
+        LOG_ERROR("%s", "Failed to determine latest language standard!");
+        free_compiler_config(cfg_base);
+        return NULL;
+    }
+
+    char *final_std = NULL;
+    if (compilers.cpp_first) { final_std = strdup_cross(std->cppstd); }
+    else { final_std = strdup_cross(std->cstd); }
+
+    fprintf(stderr, "Assigned std to: <%p>\n", (void*)std);
+
+    free_lang_std(std);
+    cfg_base->std = final_std != NULL ? strdup_cross(final_std) : strdup_cross("c99");
+
     LOG_DEBUG("Detected latest language standard <%s>", cfg_base->std);
     LOG_DEBUG("%s", "Detected platform: Linux");
 

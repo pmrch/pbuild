@@ -106,6 +106,7 @@ void normalize_whitespaces(char *restrict s);
 void to_lowercase(char *restrict str);
 void strip_quotes(char *restrict s);
 void free_split(SplitString* ss);
+void cleanup_test();
 
 char* strdup_cross(const char *str);
 char** clone_string_array_mutable(const char **arr, usize num_elem);

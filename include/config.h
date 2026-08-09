@@ -10,8 +10,15 @@ typedef struct {
     char *target;
 } CompilerConfig;
 
-int populate_empty_config(CompilerConfig *cfg);
+typedef struct {
+    char *cstd;
+    char *cppstd;
+} LangStd;
+
+void free_lang_std(LangStd *std);
 void free_compiler_config(CompilerConfig *cfg);
+
+int populate_empty_config(CompilerConfig *cfg);
 CompilerConfig* new_config(const char *project_name);
 
 #endif

@@ -68,7 +68,7 @@ i32 main(i32 argc, const char **argv) {
     normalize_whitespaces(compilation_flags->flags);
     fprintf(stderr, "Final compilation command: %s\n", compilation_flags->flags);
 
-    char *linker_flags = construct_ldflags(opts, *cfg, compilation_flags->compiler);
+    char *linker_flags = construct_ldflags(*opts, *cfg, compilation_flags->compiler);
     normalize_whitespaces(linker_flags);
     fprintf(stderr, "\nFinal linker command: %s\n", linker_flags);
 
