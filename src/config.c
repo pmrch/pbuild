@@ -75,8 +75,8 @@ static LangStd* get_latest_std(const Compiler compilers) {
         if (compilers.cpp_first) { write_test_command_cpp(cmd, sizeof(cmd), compilers, version); } 
         else { write_test_command_c(cmd, sizeof(cmd), compilers, version); }
 
-        if (compilers.cpp_first) { snprintf(buf, sizeof(buf), "c%u", version); } 
-        else { snprintf(buf, sizeof(buf), "c++%u", version); }
+        if (compilers.cpp_first) { snprintf(buf, sizeof(buf), "c++%u", version); } 
+        else { snprintf(buf, sizeof(buf), "c%u", version); }
 
         int res = system(cmd);
         if (res == 0) {
