@@ -1,5 +1,5 @@
 # Compiler choice
-CC = gcc
+CC = clang
 
 # Strict Flag Collection
 # -Werror: Turn warnings into errors
@@ -22,10 +22,10 @@ STRICT_FLAGS_CLANG = -Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wold-styl
 	-Wno-disabled-macro-expansion -Wno-unknown-warning-option -Wno-unused-macros -Wno-keyword-macro
 
 # Combine with standard flags and optimization
-CFLAGS = -std=c23 $(STRICT_FLAGS_GCC) -Iinclude -MMD -MP -O0 -fsanitize=address -g -DLOG_LEVEL=5  #-O3 -march=native -flto -ffast-math
+CFLAGS = -std=c23 $(STRICT_FLAGS_CLANG) -Iinclude -MMD -MP -DLOG_LEVEL=5 -O3 -march=native -flto -ffast-math
 
 # Linker flags (for libraries)
-LDFLAGS = -flto -fsanitize=address
+LDFLAGS = -flto -static
 
 # Target definition
 SRC := $(shell find src -name '*.c')
@@ -72,5 +72,5 @@ all: compile_commands $(TARGET)
 
 .PHONY: clean test print-version all compile_commands
 compile_commands:
-	mkdir -p tests
-	bear -- make
+	@mkdir -p tests
+	@bear -- $(MAKE) -B $(TARGET)

@@ -19,11 +19,13 @@ typedef struct {
     char        *mimalloc_lib_path; // Library search path for mimalloc (-L or /LIBPATH:)
     Lang        lang;  
     Config      config;
-    Strictness  strictness;   
+    Strictness  strictness;
+    LinkerMode  linker_mode;
     bool        lang_set;
     bool        config_set;
     bool        compiler_set;
     bool        strictness_set;
+    bool        linker_mode_set;
     bool        use_system_mimalloc;
 } CompilerOptions;
 

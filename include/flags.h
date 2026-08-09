@@ -2,6 +2,13 @@
 #include "parser.h"
 #include "utils.h"
 
+#define C_ONLY_FLAGS_UNIX ""
+
+#define LINT_FLAGS_UNIX           "-Wall"
+#define MODERATE_FLAGS_UNIX_CPP   LINT_FLAGS_UNIX \
+    "-Wextra -Wpedantic -Werror -Wuninitialized -Wconversion -Wsign-conversion -Wcast-align -Wstrict-aliasing=2 " \
+    "-Wswitch-enum -Wredundant-decls -Wshadow -Wundef -Wformat=2 -Wwrite-strings"
+
 #if defined(_MSC_VER) && !defined(__clang__)
     #define STRICT_FLAGS "/W4 /permissive- /w14456 /w14457 /w14668 /w14061 /w14062 /w14244 /w14242 /w14018"
     #define MODERATE_FLAGS "/W4 /permissive-"
@@ -81,30 +88,28 @@
 
     #define DEBUG_FLAGS_CC "/Od /Zi /clang:-fno-omit-frame-pointer /clang:-fsanitize=address /clang:-fsanitize=undefined"
     #define DEBUG_FLAGS_LNK "/DEBUG /clang:-fsanitize=address /clang:-fsanitize=undefined"
-
-#elif (defined(__clang__) || defined(__GNUC__)) && !defined(_MSC_VER)
-    #define LINT_FLAGS "-Wall"
-    #define MODERATE_FLAGS "-Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wconversion     \
-        -Wsign-conversion -Wcast-align -Wstrict-aliasing=2 -Wmissing-prototypes -Wswitch-enum \
-        -Wredundant-decls -Wshadow -Wundef -Wformat=2 -Wwrite-strings -Wstrict-prototypes"
-
-    #define MODERATE_FLAGS_CPP "-Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wconversion \
-        -Wsign-conversion -Wcast-align -Wstrict-aliasing=2 -Wswitch-enum -Wredundant-decls    \
-        -Wshadow -Wundef -Wformat=2 -Wwrite-strings"
-
-    #define CFLAGS_BASE "-Iinclude -MMD -MP"
-
-    #define OPTIMIZATION_FLAGS "-flto -ffast-math -O3 -march=native"
-    #define LINKER_FLAGS "-flto"
-
-    #define DEBUG_FLAGS_CC "-O0 -g -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined"
-    #define DEBUG_FLAGS_LNK "-fsanitize=address -fsanitize=undefined"
-#else
-    
 #endif
 
+typedef struct {
+    char *flags;
+    char *compiler;
+} Cflags;
+
+typedef enum {
+    COMPILER_GCC     = 0,
+    COMPILER_CLANG   = 1,
+    COMPILER_CLANGCL = 2,
+    COMPILER_CL      = 3
+} CompilerType;
+
 Strictness validate_strictness(const char *level_str);
+Cflags* join_cflags(const CompilerOptions opts, const CompilerConfig cfg);
+
+const char* get_strict_flags(CompilerType type, Lang lang);
+const char** get_moderate_flags(CompilerType type, Lang lang);
+const char* get_lint_flags(CompilerType type, Lang lang);
 
 const char* delegate_strictness_flags(const Strictness level);
-char* join_cflags(const CompilerOptions opts, const CompilerConfig cfg);
-char* construct_ldflags(const CompilerOptions *opts, const CompilerConfig cfg);
+char* construct_ldflags(const CompilerOptions *opts, const CompilerConfig cfg, char *compiler);
+
+void free_cflags(Cflags *cflags);

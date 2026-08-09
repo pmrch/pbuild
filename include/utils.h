@@ -29,6 +29,11 @@ typedef enum {
 } Config;
 
 typedef enum {
+    Static = 0,
+    Dynamic = 1
+} LinkerMode;
+
+typedef enum {
     Lazy     = 0,
     Lint     = 1,
     Moderate = 2,
@@ -60,12 +65,15 @@ typedef struct {
 #endif
 
 #define TO_DFREE(obj) ((ToFree){ obj, #obj, free })
-
 #define FREE_ALL(...)   \
     free_all_no_vargs(  \
         (ToFree[]){__VA_ARGS__}, \
         sizeof((ToFree[]){__VA_ARGS__}) / sizeof(ToFree)  \
     )
+
+// Fix broken bool detection of compiler
+#undef bool
+#define bool _Bool
 
 // ===========================================
 // =        Windows CPU intrinsics           =
@@ -89,7 +97,7 @@ const char* get_best_isa(void);
 // The caller owns the returned object and must call free_split().
 SplitString* split(const char *str, i32 chr);
 
-// Frees all heap-allocated strings of a heap-allocated buffer, 
+// Frees all heap-allocated strings of a heap-allocated buffer,
 // and the buffer itself
 void free_mutable_cloned_string_array(char **arr);
 
@@ -105,11 +113,12 @@ char** clone_string_array_mutable(const char **arr, usize num_elem);
 FILE* fopen_cross(const char *restrict path, const char *restrict mode);
 
 i32 create_test_file(void);
-i32 free_all(const usize count, ...);
 i32 free_all_no_vargs(ToFree objects[], const usize count);
 i32 strcat_cross(char *restrict dest, size_t dest_size, const char *restrict src);
 
 i32 strcasecmp_cross(const char *restrict s1, const char *restrict s2);
 i32 strncasecmp_cross(const char *restrict s1, const char *restrict s2, const usize char_count);
+
+bool contains_str(const char **str_arr, const usize num_elem, const char *str);
 
 #endif

@@ -71,8 +71,8 @@ static void set_config(char *restrict config, CompilerOptions *opts) {
         return;
     }
 
-    if (strncmp(config, "release", 7) == 0) { opts->config = Release; } 
-    else if (strncmp(config, "debug", 5) == 0) { opts->config = Debug; } 
+    if (strncmp(config, "release", 7) == 0) { opts->config = Release; }
+    else if (strncmp(config, "debug", 5) == 0) { opts->config = Debug; }
     else {
         LOG_WARN("Invalid config value '%s' provided, defaulting to optimized release build", config);
         opts->config = Release;
@@ -110,9 +110,32 @@ static void set_compiler(char *restrict compiler, CompilerOptions *opts) {
     opts->compiler_set = true;
 }
 
+static void set_linker_mode(char *restrict mode, CompilerOptions *opts) {
+    if (opts == NULL) {
+        LOG_ERROR("%s", "Cannot set linker mode, since opts was NULL!");
+        return;
+    }
+
+    if (mode == NULL || *mode == '\0') {
+        LOG_ERROR("%s", "Cannot set linker mode, NULL or empty string was passed!");
+        return;
+    }
+
+    if (strcmp(mode, "static") == 0) { opts->linker_mode = Static; }
+    else if (strcmp(mode, "dynamic") == 0) { opts->linker_mode = Dynamic; }
+    else {
+        LOG_WARN("Provided linking mode <%s> was invalid, defaulting to static if possible, otherwise dynamic", mode);
+        opts->linker_mode = Static;
+    }
+
+    printf("Got the following --linker-mode setting: <%s>, and setting is <%u>\n", mode, opts->linker_mode);
+    opts->linker_mode_set = true;
+}
+
 static void set_lang(char *restrict lang, CompilerOptions *opts) {
     if (opts == NULL) {
-        
+        LOG_ERROR("%s", "Failed to set language due to opts being NULL!");
+        return;
     }
 
     if (lang == NULL || *lang == '\0' || strlen(lang) > 3) {
@@ -138,6 +161,11 @@ static void set_lang(char *restrict lang, CompilerOptions *opts) {
 // Expects a path that contains the dynamically or statically linkable
 // mimalloc library .a/.so/.lib file(s)
 static void set_mimalloc(char *restrict path, CompilerOptions *opts) {
+    if (opts == NULL) {
+        LOG_ERROR("%s", "Failed to set mimalloc, since opts was NULL!");
+        return;
+    }
+
     if (opts->use_system_mimalloc) {
         LOG_ERROR("%s", "--with-system-mimalloc and --with-mimalloc are incompatible, only one of them can be specified, or just simply neither");
         free(path);
@@ -174,20 +202,24 @@ CompilerOptions* parse_compiler_flags(const int argc, const char **argv) {
     // Pre-increment to skip first argument which is the executable name itself
     while (*++argv_p != NULL) {
         strip_quotes(*argv_p);
+        char *value = strrchr(*argv_p, '=');
+
         if (strncmp(*argv_p, "--with-system-mimalloc", 22) == 0 && !opts->use_system_mimalloc) {
             opts->use_system_mimalloc = true;
             continue;
         }
 
-        char *value = strrchr(*argv_p, '=');
         if (value == NULL || *value == '\0') { continue; }
-
         char *original_casing = strdup_cross(++value);
         to_lowercase(value);
 
         if (strncmp(*argv_p, "--with-mimalloc=", 16) == 0 && opts->mimalloc_lib_path == NULL) {
             LOG_DEBUG("Received mimalloc path <%s>", original_casing);
             set_mimalloc(original_casing, opts);
+        }
+
+        if (strncmp(*argv_p, "--linker-mode=", 14) == 0 && !opts->linker_mode_set) {
+            set_linker_mode(value, opts);
         }
 
         if (strncmp(*argv_p, "--strictness=", 13) == 0 && !opts->strictness_set) {

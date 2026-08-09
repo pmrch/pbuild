@@ -218,23 +218,6 @@ i32 create_test_file(void) {
     return -1;
 }
 
-i32 free_all(const usize count, ...) {
-    va_list args;
-    va_start(args, count);
-    
-    for (usize i = 0; i < count; i++) {
-        ToFree *obj = va_arg(args, ToFree*);
-        if (obj == NULL) { continue; }
-
-        Destructor func = obj->func != NULL ? obj->func : free;
-        LOG_VERBOSE("Freeing pointer for <%s> at <%p>", obj->name, (void*)obj->obj);
-        func(obj->obj);
-    }
-
-    va_end(args);
-    return 0;
-}
-
 i32 free_all_no_vargs(ToFree objects[], const usize count) {
     for (usize i = 0; i < count; i++) {
         ToFree obj = objects[i];
@@ -246,6 +229,18 @@ i32 free_all_no_vargs(ToFree objects[], const usize count) {
     }
 
     return 0;
+}
+
+bool contains_str(const char **str_arr, const usize num_elem, const char *str) {
+    if (str_arr == NULL) { return false; }
+    
+    for (usize i = 0; i < num_elem; i++) {
+        if (*str_arr[i] != '\0' && strcmp(str_arr[i], str) == 0) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void free_split(SplitString* ss) {

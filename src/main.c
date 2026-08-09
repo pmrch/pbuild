@@ -23,10 +23,10 @@ static i32 verify_arguments(const char *restrict const *argv, const i32 argc) {
 
     i32 invalid_counter = 0;
     const char **invalid_flags_p = invalid_flags;
-    
+
     for (i32 i = 1; i < argc; i++) {
         const char *arg = argv[i];
-        
+
         if (!(arg[0] == '-' && arg[1] == '-')) {
             *invalid_flags_p++ = arg;
             invalid_counter++;
@@ -50,7 +50,7 @@ i32 main(i32 argc, const char **argv) {
     CompilerConfig *cfg = new_config("compile_project");
     if (cfg == NULL) { return -1; }
 
-    LOG_DEBUG("Created new config with: \nCompilerConfig {\n\tcc: %s\n\tlink: %s\n\tstd: %s\n\ttarget: %s\n}", 
+    LOG_DEBUG("Created new config with: \nCompilerConfig {\n\tcc: %s\n\tlink: %s\n\tstd: %s\n\ttarget: %s\n}",
         cfg->cc, cfg->link, cfg->std, cfg->target
     );
 
@@ -64,18 +64,20 @@ i32 main(i32 argc, const char **argv) {
         return(FREE_ALL(TO_FREE(cfg, free_compiler_config), TO_DFREE(cwd), TO_DFREE(opts->mimalloc_lib_path), TO_DFREE(opts)));
     }
 
-    char *compilation_flags = join_cflags(*opts, *cfg);
-    normalize_whitespaces(compilation_flags);
-    LOG_VERBOSE("\nFinal compilation command: %s\n", compilation_flags);
+    Cflags *compilation_flags = join_cflags(*opts, *cfg);
+    normalize_whitespaces(compilation_flags->flags);
+    fprintf(stderr, "Final compilation command: %s\n", compilation_flags->flags);
 
-    char *linker_flags = construct_ldflags(opts, *cfg);
+    char *linker_flags = construct_ldflags(opts, *cfg, compilation_flags->compiler);
     normalize_whitespaces(linker_flags);
-    fprintf(stderr, "Final linker command: %s\n", linker_flags);
+    fprintf(stderr, "\nFinal linker command: %s\n", linker_flags);
 
     FREE_ALL(
-        TO_FREE(cfg, free_compiler_config), TO_DFREE(cwd), TO_DFREE(compilation_flags), TO_DFREE(linker_flags), 
-        TO_DFREE(opts->mimalloc_lib_path),  TO_DFREE(opts)
+        TO_DFREE(linker_flags), TO_FREE(compilation_flags, free_cflags), TO_DFREE(opts->mimalloc_lib_path), TO_DFREE(opts),
+        TO_DFREE(cwd), TO_FREE(cfg, free_compiler_config),
     );
 
     return 0;
 }
+
+// 0x7a4454de0100
