@@ -2,12 +2,14 @@
 #include "parser.h"
 #include "utils.h"
 
-#define C_ONLY_FLAGS_UNIX ""
+#define C_ONLY_FLAGS_UNIX "-Wmissing-prototypes -Wstrict-prototypes -Wold-style-definition -Wwrite-strings"
 
 #define LINT_FLAGS_UNIX           "-Wall"
 #define MODERATE_FLAGS_UNIX_CPP   LINT_FLAGS_UNIX \
-    "-Wextra -Wpedantic -Werror -Wuninitialized -Wconversion -Wsign-conversion -Wcast-align -Wstrict-aliasing=2 " \
-    "-Wswitch-enum -Wredundant-decls -Wshadow -Wundef -Wformat=2 -Wwrite-strings"
+    " -Wextra -Wpedantic -Werror -Wuninitialized -Wconversion -Wsign-conversion -Wcast-align -Wstrict-aliasing=2 " \
+    "-Wswitch-enum -Wredundant-decls -Wshadow -Wundef -Wformat=2"
+#define STRICT_FLAGS_UNIX LINT_FLAGS_UNI \
+    ""
 
 #if defined(_MSC_VER) && !defined(__clang__)
     #define STRICT_FLAGS "/W4 /permissive- /w14456 /w14457 /w14668 /w14061 /w14062 /w14244 /w14242 /w14018"
