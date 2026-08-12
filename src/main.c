@@ -35,6 +35,10 @@ static i32 verify_arguments(const char *restrict const *argv, const i32 argc) {
 
     if (invalid_flags != NULL && invalid_flags[0] != NULL && *invalid_flags[0] != '\0') {
         LOG_DEBUG("Found invalid argument <%s>", invalid_flags[0]);
+
+        for (i32 i = 0; i < invalid_counter; i++) {
+            LOG_WARN("Unknown option: '%s'", invalid_flags[i]);
+        }
     }
 
     LOG_VERBOSE("Freeing invalid flags buffer at <%p>", (void*)invalid_flags);
@@ -47,6 +51,13 @@ static i32 verify_arguments(const char *restrict const *argv, const i32 argc) {
 
 i32 main(i32 argc, const char **argv) {
     fprintf(stderr, "Current log level: %d\n", LOG_LEVEL);
+    i32 ver_args = verify_arguments(argv, argc);
+
+    if (ver_args != 0) {
+        LOG_ERROR("%d invalid argument(s) have been provided!", ver_args);
+        return -1;
+    }
+
     CompilerConfig *cfg = new_config("compile_project");
     if (cfg == NULL) { return -1; }
 
@@ -59,7 +70,7 @@ i32 main(i32 argc, const char **argv) {
     LOG_VERBOSE("Current working directory is at: <%p>", (void*)cwd);
 
     CompilerOptions *opts = parse_compiler_flags(argc, argv);
-    if (opts == NULL || cfg == NULL || verify_arguments(argv, argc) != 0) {
+    if (opts == NULL || cfg == NULL) {
         LOG_ERROR("%s", "Failed to setup options and default config!");
         return(FREE_ALL(TO_FREE(cfg, free_compiler_config), TO_DFREE(cwd), TO_DFREE(opts->mimalloc_lib_path), TO_DFREE(opts)));
     }
@@ -70,7 +81,7 @@ i32 main(i32 argc, const char **argv) {
 
     char *linker_flags = construct_ldflags(*opts, *cfg, compilation_flags->compiler);
     normalize_whitespaces(linker_flags);
-    fprintf(stderr, "\nFinal linker command: %s\n", linker_flags);
+    LOG_INFO("Final linker command: %s", linker_flags);
 
     FREE_ALL(
         TO_DFREE(linker_flags), TO_FREE(compilation_flags, free_cflags), TO_DFREE(opts->mimalloc_lib_path), TO_DFREE(opts),
@@ -79,5 +90,3 @@ i32 main(i32 argc, const char **argv) {
 
     return 0;
 }
-
-// 0x7a4454de0100

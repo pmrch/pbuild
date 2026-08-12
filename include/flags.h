@@ -83,6 +83,7 @@ Cflags* join_cflags(const CompilerOptions opts, const CompilerConfig cfg);
 
 const char* delegate_strictness_flags(const Strictness level, const CompilerType ctype);
 char* construct_ldflags(const CompilerOptions opts, const CompilerConfig cfg, char *compiler);
+char* get_compiler(const CompilerOptions opts, const CompilerConfig cfg);
 
 void free_cflags(Cflags *cflags);
 

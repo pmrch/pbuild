@@ -35,17 +35,17 @@ Strictness validate_strictness(const char* level_str) {
     return Moderate;
 }
 
-static void populate_temp_cflags(char *restrict dest, const ToolchainFlags tcflags, const usize dest_size, const CompilerOptions opts) { 
-    if (opts.config_set && opts.config == Debug) { 
-        strcat_with_space(dest, dest_size, tcflags.debug); 
+static void populate_temp_cflags(char *restrict dest, const ToolchainFlags tcflags, const usize dest_size, const CompilerOptions opts) {
+    if (opts.config_set && opts.config == Debug) {
+        strcat_with_space(dest, dest_size, tcflags.debug);
 
         if (opts.linker_mode_set && opts.linker_mode == Static) {
-            if (tcflags.type == COMPILER_CLANGCL || tcflags.type == COMPILER_CL) { 
-                strcat_with_space(dest, dest_size, "/MTd"); 
+            if (tcflags.type == COMPILER_CLANGCL || tcflags.type == COMPILER_CL) {
+                strcat_with_space(dest, dest_size, "/MTd");
             }
         }
-    } else { 
-        strcat_with_space(dest, dest_size, tcflags.release); 
+    } else {
+        strcat_with_space(dest, dest_size, tcflags.release);
 
         if (opts.linker_mode_set && opts.linker_mode == Static) {
             if (tcflags.type == COMPILER_CLANGCL) { strcat_with_space(dest, dest_size, "/clang:-static"); }
@@ -61,7 +61,7 @@ static void populate_temp_cflags(char *restrict dest, const ToolchainFlags tcfla
         strcat_with_space(dest, dest_size, delegate_strictness_flags(Moderate, tcflags.type));
     }
 
-    
+
     if (opts.linker_mode_set && opts.linker_mode == Static) {
         if (tcflags.type == COMPILER_CLANGCL) { strcat_with_space(dest, dest_size, "/clang:-static"); }
         if (tcflags.type == COMPILER_CL) { strcat_with_space(dest, dest_size, "/MT"); }
@@ -82,8 +82,8 @@ static char *get_cflags(const CompilerType ctype, const CompilerOptions opts) {
     char cflags_temp[PATH_MAX / 2] = { 0 };
     usize matrix_elems = sizeof(FLAG_MATRIX) / sizeof(ToolchainFlags);
 
-    if (ctype == COMPILER_GCC || ctype == COMPILER_CLANG) { 
-        snprintf(cflags_temp, sizeof(cflags_temp), "%s", CFLAGS_BASE_UNIX); 
+    if (ctype == COMPILER_GCC || ctype == COMPILER_CLANG) {
+        snprintf(cflags_temp, sizeof(cflags_temp), "%s", CFLAGS_BASE_UNIX);
     } else if (ctype == COMPILER_CLANGCL || ctype == COMPILER_CL) {
         snprintf(cflags_temp, sizeof(cflags_temp), "%s", CFLAGS_BASE_CL);
     }
@@ -102,7 +102,7 @@ static char *get_cflags(const CompilerType ctype, const CompilerOptions opts) {
 static const char *get_ldflags(const CompilerType ctype, const CompilerOptions opts) {
     if (ctype == UNKNOWN) { return NULL; }
 
-    if (opts.config_set && opts.config == Debug) {  
+    if (opts.config_set && opts.config == Debug) {
         if (ctype == COMPILER_GCC || ctype == COMPILER_CLANG) { return DEBUG_FLAGS_LNK_UNIX; }
         if (ctype == COMPILER_CL) { return DEBUG_FLAGS_LNK_CL; }
         if (ctype == COMPILER_CLANGCL) { return DEBUG_FLAGS_LNK_CLANG_CL; }
@@ -134,13 +134,13 @@ const char* delegate_strictness_flags(const Strictness level, const CompilerType
         if (ctype == COMPILER_CLANGCL) {} // TODO: Add whitespace normalization, convert to /clang: style flags
     }
 
-    if (level == Moderate) { 
+    if (level == Moderate) {
         if (ctype == COMPILER_CLANG || ctype == COMPILER_GCC) { return MODERATE_FLAGS_UNIX; }
         if (ctype == COMPILER_CL) { return MODERATE_FLAGS_CL; }
         if (ctype == COMPILER_CLANGCL) {}  // TODO: Refer to flags.c line 91 comment
     }
 
-    if (level == Lint) { 
+    if (level == Lint) {
         if (ctype == COMPILER_GCC || ctype == COMPILER_CLANG) { return LINT_FLAGS_UNIX; }
         if (ctype == COMPILER_CL) { return LINT_FLAGS_CL; }
         if (ctype == COMPILER_CLANGCL) { return ("/clang:" LINT_FLAGS_UNIX); }
@@ -149,7 +149,7 @@ const char* delegate_strictness_flags(const Strictness level, const CompilerType
     return " ";
 }
 
-static char* get_compiler(const CompilerOptions opts, const CompilerConfig cfg) {
+char* get_compiler(const CompilerOptions opts, const CompilerConfig cfg) {
     char *compiler = NULL;
 
     if (opts.compiler_set && opts.compiler.cc != NULL && opts.compiler.cxx != NULL) {
@@ -177,7 +177,7 @@ static const char* get_linker(char *compiler) {
     bool clang = strcmp(compiler, "clang") == 0 || strcmp(compiler, "clang++") == 0;
     if (gnu || clang) { return compiler; }
 
-    if (strcmp(compiler, "clang-cl") == 0 || strcmp(compiler, "clang-cl.exe") == 0) { return "clang-cl.exe"; } 
+    if (strcmp(compiler, "clang-cl") == 0 || strcmp(compiler, "clang-cl.exe") == 0) { return "clang-cl.exe"; }
     if (strcmp(compiler, "cl") == 0 || strcmp(compiler, "cl.exe") == 0) { return "link.exe"; }
 
     LOG_ERROR("Couldn't determine linker from compiler <%s>", compiler);
@@ -231,8 +231,8 @@ char* construct_ldflags(const CompilerOptions opts, const CompilerConfig cfg, ch
     const usize dest_size = sizeof(ldflags);
 
     const char *linker = get_linker(compiler);
-    if (linker == NULL || *linker == '\0') { 
-        if (cfg.link != NULL && *cfg.link != '\0') { linker = cfg.link; } 
+    if (linker == NULL || *linker == '\0') {
+        if (cfg.link != NULL && *cfg.link != '\0') { linker = cfg.link; }
         else { return NULL; }
     }
 
@@ -242,10 +242,10 @@ char* construct_ldflags(const CompilerOptions opts, const CompilerConfig cfg, ch
         LOG_ERROR("%s", "Failed to derive ldflags!");
         return NULL;
     }
-    
+
     snprintf(ldflags, dest_size, "%s %s", linker, ldflags_temp);
     if (opts.mimalloc_lib_path != NULL && *opts.mimalloc_lib_path != '\0') {
-        if (!is_mimalloc_available(cfg, opts)) {
+        if (!is_mimalloc_available(opts)) {
             LOG_DEBUG("%s", "Mimalloc was not available, trying to download...");
             return NULL;
         }
@@ -253,6 +253,16 @@ char* construct_ldflags(const CompilerOptions opts, const CompilerConfig cfg, ch
         char mimalloc_path[PATH_MAX] = { 0 };
         join_ldflags_path(mimalloc_path, sizeof(mimalloc_path), opts.mimalloc_lib_path);
         strcat_with_space(ldflags, dest_size, mimalloc_path);
+    }
+
+    if (opts.use_system_mimalloc) {
+        char mimalloc_ldflag[256] = { 0 };
+
+        if(is_system_mimalloc_available(opts, cfg, mimalloc_ldflag, sizeof(mimalloc_ldflag))) {
+            strcat_with_space(ldflags, dest_size, mimalloc_ldflag);
+        } else {
+            LOG_WARN("%s", "Failed to detect system mimalloc");
+        }
     }
 
     #ifndef _MSC_VER

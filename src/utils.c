@@ -1,7 +1,7 @@
 #ifndef _MSC_VER
 #include <strings.h>
 
-#define _POSIX_C_SOURCE 200809L
+
 #endif
 
 #include <ctype.h>
@@ -12,6 +12,8 @@
 
 #include "utils.h"
 #include "log.h"
+
+#undef strchr
 
 #ifdef _MSC_VER
 #include <intrin.h>
@@ -44,8 +46,8 @@ static CpuFeatures get_supported_isa() {
 
     // Get Leaf 7
     cpuid(7, 0, cpuInfo);
-    if (cpuInfo[1] & (1 << 5)) { 
-        f.avx2 = true; 
+    if (cpuInfo[1] & (1 << 5)) {
+        f.avx2 = true;
     }
 
     bool zmm_enabled = (xcr0 & 0xE6) == 0xE6;
@@ -93,7 +95,7 @@ SplitString* split(const char *str, i32 chr) {
         // Gets the first occurance of the delimiter in the string
         // For example in <libsobium.so.2.1>, points at first dot, leaves <.so.2.1>
         // here pointer delim is <libsobium> away from the start
-        char *delim = strchr(ptr, chr);
+        const char *delim = strchr(ptr, chr);
         if (delim != NULL) {
             usize token_len = (usize)(delim - ptr);
             char *token = (char*)malloc(token_len + 1);
@@ -118,7 +120,7 @@ SplitString* split(const char *str, i32 chr) {
 char *strdup_cross(const char *str) {
     #ifdef _MSC_VER
     return _strdup(str);
-    
+
     #else
     return strdup(str);
 
@@ -164,7 +166,7 @@ i32 strcasecmp_cross(const char *restrict s1, const char *restrict s2) {
 i32 strncasecmp_cross(const char *restrict s1, const char *restrict s2, const usize char_count) {
     #ifdef _MSC_VER
     return _strnicmp(s1, s2, char_count);
-    
+
     #else
     return strncasecmp(s1, s2, char_count);
 
@@ -187,7 +189,7 @@ i32 strcat_cross(char *restrict dest, usize dest_size, const char *restrict src)
         LOG_ERROR("Target buffer was too small for string catenation (%zu bytes < %zu bytes)", dest_size, final_size);
         return -1;
     }
-    
+
     strcat(dest, src);
     return 0;
 
@@ -204,7 +206,7 @@ static void write_file_create_command(char *restrict buf, usize dest_size, const
 
 i32 create_test_file(void) {
     const char* const* ptr = (const char* const[]){ "test.c", "test.cpp", NULL };
-    
+
     u32 good = 0;
     char buf[100] = { 0 };
 
@@ -241,7 +243,7 @@ i32 free_all_no_vargs(ToFree objects[], const usize count) {
 
 bool contains_str(const char **str_arr, const usize num_elem, const char *str) {
     if (str_arr == NULL) { return false; }
-    
+
     for (usize i = 0; i < num_elem; i++) {
         if (*str_arr[i] != '\0' && strcmp(str_arr[i], str) == 0) {
             return true;
@@ -256,7 +258,7 @@ void free_split(SplitString* ss) {
     LOG_VERBOSE("Freeing a SplitString pointer at <%p>", (void*)ss);
     if (ss == NULL) { return; }
 
-    if (ss->strings != NULL && ss->num_split > 0) { 
+    if (ss->strings != NULL && ss->num_split > 0) {
         for (usize i = 0; i < ss->num_split; i++) {
             LOG_VERBOSE("Freeing the %zu. string in SplitString", i);
             free(ss->strings[i]);
@@ -337,10 +339,7 @@ void strip_quotes(char *restrict str) {
 
 void free_mutable_cloned_string_array(char **arr) {
     char **p = arr;
-    while (*p != NULL) {
-        free(*p++);
-    }
-
+    while (*p != NULL) { free(*p++); }
     free(arr);
 }
 

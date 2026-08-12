@@ -11,6 +11,9 @@
 #include "path.h"
 #include "log.h"
 
+#undef strchr
+#undef strrchr
+
 Compiler pair_compiler(const char *compiler) {
     if (compiler == NULL || *compiler == '\0') {
         LOG_ERROR("%s", "Compiler value was parsed as NULL, cannot pair!");
@@ -166,6 +169,7 @@ static void set_lang(char *restrict lang, CompilerOptions *opts) {
 static void set_mimalloc(char *restrict path, CompilerOptions *opts) {
     if (opts == NULL) {
         LOG_ERROR("%s", "Failed to set mimalloc, since opts was NULL!");
+        free(path);
         return;
     }
 
@@ -183,7 +187,7 @@ static void set_mimalloc(char *restrict path, CompilerOptions *opts) {
     }
 
     opts->use_system_mimalloc = false;
-    opts->mimalloc_lib_path = path;
+    opts->mimalloc_lib_path = strdup_cross(path);
 }
 
 CompilerOptions* parse_compiler_flags(const int argc, const char **argv) {
@@ -240,6 +244,8 @@ CompilerOptions* parse_compiler_flags(const int argc, const char **argv) {
         if (strncmp(*argv_p, "--lang=", 7) == 0 && !opts->lang_set) {
             set_lang(value, opts);
         }
+
+        free(original_casing);
     }
 
     free_mutable_cloned_string_array(argv_clone);

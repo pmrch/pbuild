@@ -5,6 +5,9 @@
 #include "path.h"
 #include "utils.h"
 
+#undef strchr
+#undef strrchr
+
 // Support both Windows and Linux
 #ifdef _MSC_VER
 #define WIN32_LEAN_AND_MEAN
@@ -51,21 +54,21 @@ static bool is_path_valid_win(const char *path) {
         ++ptr;
     }
 
-    if ((dir_depth > num_backslashes) || dir_depth == 0) { 
-        return false; 
+    if ((dir_depth > num_backslashes) || dir_depth == 0) {
+        return false;
     }
 
     DWORD attrs = GetFileAttributesA(path);
-    if (attrs == INVALID_FILE_ATTRIBUTES) { 
+    if (attrs == INVALID_FILE_ATTRIBUTES) {
         LOG_DEBUG("Directory at <%s> not found", path);
-        return false; 
+        return false;
     }
 
-    if (!(attrs & FILE_ATTRIBUTE_DIRECTORY)) { 
+    if (!(attrs & FILE_ATTRIBUTE_DIRECTORY)) {
         LOG_WARN("Provided path <%s> was not a directory!", path);
-        return false; 
+        return false;
     }
- 
+
     return true;
 }
 
@@ -94,7 +97,7 @@ static bool is_path_valid_unix(const char *path) {
 
     bool currently_in_dir = false;
     while (*ptr != '\0') {
-        if (*ptr == '/') { 
+        if (*ptr == '/') {
             currently_in_dir = false;
             ++num_slashes;
         }
@@ -121,12 +124,12 @@ static bool is_path_valid_unix(const char *path) {
 
 #endif
 
-// Returned buffer is malloc()'d by the platform's compatible getcwd(), 
+// Returned buffer is malloc()'d by the platform's compatible getcwd(),
 // so caller must free() it
 char* get_cwd(void) {
     #ifdef _MSC_VER
     return get_cwd_win();
-    
+
     #else
     return get_cwd_unix();
 
@@ -164,7 +167,7 @@ bool is_path_valid(const char *path) {
 
     #ifdef _MSC_VER
     return is_path_valid_win(path);
-    
+
     #else
     return is_path_valid_unix(path);
 
