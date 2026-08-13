@@ -1,11 +1,12 @@
 #ifndef PATH_H
 #define PATH_H
 
-#ifndef PATH_MAX
-    #define PATH_MAX 4096
-#endif
-
 #include <stdbool.h>
+#include "utils.h"
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 
 #undef bool
 #define bool _Bool
@@ -17,6 +18,9 @@ char* get_cwd(void);
 // Returned buffer is strdup()'d, caller must free() it
 char* get_basename(char *abs_path);
 
+bool path_exists(const char* path);
 bool is_path_valid(const char *path);
+i32 create_directory(const char *path);
+void join_path(char *restrict path, const char *restrict child);
 
 #endif

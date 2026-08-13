@@ -152,6 +152,7 @@ FILE* fopen_cross(const char *restrict path, const char *restrict mode) {
     #endif
 }
 
+
 i32 strcasecmp_cross(const char *restrict s1, const char *restrict s2) {
     #ifdef _MSC_VER
     return _stricmp(s1, s2);

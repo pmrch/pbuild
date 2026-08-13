@@ -1,0 +1,98 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#define THREADS 1024
+
+static void *one_task(void *args_orig) {
+    pid_t pid = fork();
+    void **args_void = (void**)(args_orig);
+
+    char *args[3] = { 0 };
+    for (int i = 0; i < 3; i++) { args[i] = (char*)args_void[i]; }
+
+    if (pid < 0) {
+        // Fork failed
+        perror("fork\n");
+        return NULL; 
+    } 
+    
+    if (pid == 0) {
+        // Child: do almost nothing except exec.
+        execv(args[0], args);
+        
+        // execv only returns on failure.
+        perror("execv failed");
+        _exit(EXIT_FAILURE);
+    }
+    
+    // Parent thread: block until this particular child terminates.
+    int status;
+    
+    // Wait for the specific child process to terminate
+    pid_t terminated_pid = waitpid(pid, &status, 0);
+    printf("Task %d finished at second %li\n", *(int*)args_void[3], time(NULL) - *(time_t*)args_void[4]);
+
+    if (terminated_pid < 0) {
+        perror("waitpid failed");
+        return NULL;
+    }
+
+    // Check how the child process exited
+    if (WIFEXITED(status)) {
+        printf("Child exited with status %d\n", WEXITSTATUS(status));
+    } else if (WIFSIGNALED(status)) {
+        printf("Child killed by signal %d\n", WSTOPSIG(status));
+    }
+
+    return NULL;
+}
+
+int main(void) {
+    // Define the command and arguments.
+    // Note: The first argument by convention should be the program name itself.
+    // The list must be terminated with a NULL pointer.
+    srand((unsigned int)time(NULL));
+    void **args_list[THREADS] = { 0 };
+
+    int indexes[THREADS] = { 0 };
+    time_t start = time(NULL);
+
+    for (int i = 0; i < THREADS; i++) {
+        indexes[i] = i;
+
+        int rand_num = rand() % 20;
+        if (rand_num == 0) { ++rand_num; }
+
+        char buf[16] = { 0 };
+        snprintf(buf, sizeof(buf), "%d", rand_num);
+
+        args_list[i] = (void**)malloc(5 * sizeof(void*));
+        args_list[i][0] = "/usr/sbin/sleep";
+        args_list[i][1] = strdup(buf);
+        args_list[i][2] = NULL;
+        args_list[i][3] = &indexes[i];
+        args_list[i][4] = &start;
+
+        printf("Task %d sleeping for %d seconds!\n", i, rand_num);
+    }
+
+    pthread_t threads[THREADS] = { 0 };
+    for (int i = 0; i < THREADS; i++) {
+        int ret = pthread_create(&threads[i], NULL, one_task, (void*)args_list[i]);
+        printf("Return code from created pthread: %d\n", ret);
+    }
+
+    for (int i = 0; i < THREADS; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    time_t end = time(NULL);
+    printf("Total runtime: %li seconds\n", end - start);
+    return 0;
+}

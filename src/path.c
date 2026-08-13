@@ -5,6 +5,12 @@
 #include "path.h"
 #include "utils.h"
 
+#ifdef _MSC_VER
+    #define PATH_SEP "\\"
+#else
+    #define PATH_SEP "/"
+#endif
+
 #undef strchr
 #undef strrchr
 
@@ -17,47 +23,66 @@
 #include <ctype.h>
 
 // Returned buffer is malloc()'d by _getcwd(), so caller must free() it
-static char* get_cwd_win(void) {
-    char *buffer = _getcwd(NULL, PATH_MAX);
-    if (buffer == NULL) {
+static char* GetCwdWin(void) {
+    char buf[PATH_MAX] = { 0 };
+    
+    if (GetCurrentDirectory(sizeof(buf), buf) == 0) {
         LOG_ERROR("Failed to get current working directory!");
         return NULL;
     }
 
-    return buffer;
+    return strdup_cross(buf);
 }
 
+static bool IsPathValidWin(const char *path) {
+    if (path == NULL || *path == '\0') {
+        LOG_DEBUG("%s", "NULL path was provided!");
+        return false;
+    }
 
-static bool is_path_valid_win(const char *path) {
-    bool starts_correctly = isalpha((int)(path[0])) && path[1] == ':' && path[2] == '\\';
-    if (path == NULL || *path == '\0' || !starts_correctly) {
-        LOG_DEBUG("%s", "Path doesn't start correctly!");
+    bool startsCorrectly = isalpha((int)(path[0])) && path[1] == ':' && path[2] == '\\';
+    if (!startsCorrectly) {
+        LOG_DEBUG("Path doesn't start correctly <%s>!", path);
         return false;
     }
 
     const char *ptr = path;
-    usize num_backslashes = 0;
-    usize dir_depth = 0;
+    usize numBackslashes = 0;
+    usize dirDepth = 0;
 
-    bool is_in_dir = false;
+    bool isInDir = false;
     while (*ptr != '\0') {
         if (*ptr == '\\') {
-            is_in_dir = true;
-            ++num_backslashes;
+            isInDir = true;
+            ++numBackslashes;
         }
 
-        if (*ptr != '\\' && !is_in_dir) {
-            is_in_dir = true;
-            ++dir_depth;
+        if (*ptr != '\\' && !isInDir) {
+            isInDir = true;
+            ++dirDepth;
         }
 
         ++ptr;
     }
 
-    if ((dir_depth > num_backslashes) || dir_depth == 0) {
+    if ((dirDepth > numBackslashes) || dirDepth == 0) {
         return false;
     }
 
+    return true;
+}
+
+static i32 CreateDirectoryWin(const char *path) {
+    if (CreateDirectory(path, NULL)) { return 0; }
+
+    DWORD err = GetLastError();
+    if (err == ERROR_ALREADY_EXISTS) { return 0; }
+    if (err == ERROR_PATH_NOT_FOUND) { return -1; }
+
+    return -1;
+}
+
+static bool PathExistsWin(const char *path) {
     DWORD attrs = GetFileAttributesA(path);
     if (attrs == INVALID_FILE_ATTRIBUTES) {
         LOG_DEBUG("Directory at <%s> not found", path);
@@ -76,6 +101,7 @@ static bool is_path_valid_win(const char *path) {
 #include <stdlib.h>
 #include <dirent.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 // Returned buffer is malloc()'d by getcwd(), so caller must free() it
 static char* get_cwd_unix(void) {
@@ -115,8 +141,12 @@ static bool is_path_valid_unix(const char *path) {
         return false;
     }
 
+    return true;
+}
+
+static bool path_exists_unix(const char *path) {
     DIR *dir = opendir(path);
-    if (!dir) { return false; }
+    if (dir == NULL) { return false; }
 
     closedir(dir);
     return true;
@@ -128,7 +158,7 @@ static bool is_path_valid_unix(const char *path) {
 // so caller must free() it
 char* get_cwd(void) {
     #ifdef _MSC_VER
-    return get_cwd_win();
+    return GetCwdWin();
 
     #else
     return get_cwd_unix();
@@ -159,6 +189,16 @@ char* get_basename(char *abs_path) {
     return last_slash ? strdup_cross(++last_slash) : strdup_cross(abs_path);
 }
 
+bool path_exists(const char* path) {
+    #ifdef _MSC_VER
+    return PathExistsWin(path);
+
+    #else
+    return path_exists_unix(path);
+
+    #endif
+}
+
 bool is_path_valid(const char *path) {
     if (path == NULL || *path == '\0') {
         LOG_ERROR("%s" , "NULL path or empty string was provided, can't validate");
@@ -166,10 +206,30 @@ bool is_path_valid(const char *path) {
     }
 
     #ifdef _MSC_VER
-    return is_path_valid_win(path);
+    return IsPathValidWin(path);
 
     #else
     return is_path_valid_unix(path);
+
+    #endif
+}
+
+void join_path(char *restrict path, const char *restrict child) {
+    if (path == NULL || child == NULL) { 
+        LOG_ERROR("%s", "Couldn't join paths, parent and/or child dir was NULL");
+        return; 
+    }
+
+    strcat_cross(path, PATH_MAX, PATH_SEP);
+    strcat_cross(path, PATH_MAX, child);
+}
+
+i32 create_directory(const char *path) {
+    #ifndef _MSC_VER
+    return mkdir(path, 0755);
+
+    #else
+    return CreateDirectoryWin(path);
 
     #endif
 }

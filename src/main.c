@@ -1,12 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "log.h"
-#include "path.h"
-#include "flags.h"
-#include "utils.h"
 #include "config.h"
 #include "parser.h"
+#include "build.h"
+#include "flags.h"
+#include "utils.h"
+#include "path.h"
+#include "log.h"
+
+#ifndef _MSC_VER
+    #include <unistd.h>
+    static isize get_num_cpu() { return sysconf(_SC_NPROCESSORS_ONLN); }
+#else
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
+
+    static usize get_num_cpu() { SYSTEM_INFO si; GetSystemInfo(&si); return si.dwNumberOfProcessors; }
+#endif
 
 static i32 verify_arguments(const char *restrict const *argv, const i32 argc) {
     LOG_DEBUG("Verifying command line arguments, found %d args", argc - 1);
@@ -77,7 +88,8 @@ i32 main(i32 argc, const char **argv) {
 
     Cflags *compilation_flags = join_cflags(*opts, *cfg);
     normalize_whitespaces(compilation_flags->flags);
-    fprintf(stderr, "Final compilation command: %s\n", compilation_flags->flags);
+    //fprintf(stderr, "Final compilation command: %s\n", compilation_flags->flags);
+    compile_code(compilation_flags->flags, cwd, get_num_cpu());
 
     char *linker_flags = construct_ldflags(*opts, *cfg, compilation_flags->compiler);
     normalize_whitespaces(linker_flags);
