@@ -11,12 +11,12 @@
 
 #ifndef _MSC_VER
     #include <unistd.h>
-    static isize get_num_cpu() { return sysconf(_SC_NPROCESSORS_ONLN); }
+    static usize get_num_cpu() { isize res = sysconf(_SC_NPROCESSORS_ONLN); return res > 0 ? (usize)res : 1; }
 #else
     #define WIN32_LEAN_AND_MEAN
-    #include <windows.h>
+    #include <Windows.h>
 
-    static usize get_num_cpu() { SYSTEM_INFO si; GetSystemInfo(&si); return si.dwNumberOfProcessors; }
+    static usize get_num_cpu() { DWORD n = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS); return n > 0 ? n : 1; }
 #endif
 
 static i32 verify_arguments(const char *restrict const *argv, const i32 argc) {
@@ -93,7 +93,7 @@ i32 main(i32 argc, const char **argv) {
 
     char *linker_flags = construct_ldflags(*opts, *cfg, compilation_flags->compiler);
     normalize_whitespaces(linker_flags);
-    LOG_INFO("Final linker command: %s", linker_flags);
+    //LOG_INFO("Base linker command: %s", linker_flags);
 
     FREE_ALL(
         TO_DFREE(linker_flags), TO_FREE(compilation_flags, free_cflags), TO_DFREE(opts->mimalloc_lib_path), TO_DFREE(opts),

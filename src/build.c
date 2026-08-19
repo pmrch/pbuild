@@ -36,7 +36,7 @@ static i32 prepare_build(char *restrict path, const usize buf_size, const char *
     return 0;
 }
 
-int compile_code(const char *base_cmd, const char *cwd, const isize num_jobs) {
+int compile_code(const char *base_cmd, const char *cwd, const usize num_jobs) {
     if (base_cmd == NULL || cwd == NULL) {
         LOG_ERROR("%s", "Can't compile code, no cwd or base command was provided!");
         return -1;

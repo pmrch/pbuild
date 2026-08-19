@@ -20,7 +20,6 @@
 
 #ifdef _MSC_VER
 #define WIN32_LEAN_AND_MEAN
-#define NTDDI_VERSION 0x0A000000
 
 #include <Windows.h>
 #include <stdlib.h>
@@ -62,22 +61,24 @@ static bool is_mimalloc_available_win(const CompilerOptions opts) {
     return false;
 }
 
-static bool is_system_mimalloc_available_win(const CompilerOptions opts, const CompilerConfig cfg, char *restrict flag, const usize flag_size) {
+static bool is_system_mimalloc_available_win(const CompilerOptions opts, const CompilerConfig cfg) {
     char *compiler = get_compiler(opts, cfg);
     if (compiler == NULL) {
         LOG_ERROR("%s", "Can't detect system mimalloc due to missing compiler!");
         return false;
     }
 
-    i32 res = system("vcpkg --version > NUL 2>&1");
-    if (res != 0) { LOG_WARN("%s", "vcpkg was not found on PATH"); }
-
     char vcpkg_root[PATH_MAX] = { 0 };
     DWORD vcpkg_root_res = GetEnvironmentVariable("VCPKG_ROOT", vcpkg_root, sizeof(vcpkg_root));
     if (vcpkg_root_res == ERROR_ENVVAR_NOT_FOUND) {
         LOG_WARN("%s", "VCPKG_ROOT wasn't found in environment variables");
+        return false;
     }
 
+    i32 res = system("vcpkg --version > NUL 2>&1");
+    if (res != 0) { LOG_WARN("%s", "vcpkg was not found on PATH"); return false; }
+
+    system("vcpkg --version");
     return false;
 }
 
@@ -186,7 +187,10 @@ bool is_system_mimalloc_available(const CompilerOptions opts, const CompilerConf
     return is_system_mimalloc_available_unix(opts, cfg, flag, flag_size);
 
     #else
-    return is_system_mimalloc_available_win(opts, cfg, flag, flag_size);
+    (void)flag;
+    (void)flag_size;
+    
+    return is_system_mimalloc_available_win(opts, cfg);
 
     #endif
 }

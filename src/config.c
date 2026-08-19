@@ -1,28 +1,25 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#ifndef __GNUC__
+#if !defined(__GNUC__) && !defined(_MSC_VER)
 #include <string.h>
 #endif
 
-#include "config.h"
+#ifndef _MSC_VER
 #include "parser.h"
+#endif
+
+#include "config.h"
 #include "utils.h"
 #include "path.h"
 #include "log.h"
 
-#ifdef _WIN32
-    #define NULDEV "NUL"
-    #define FILE_EXT ".exe"
-#else
-    #define NULDEV "/dev/null"
-    #define FILE_EXT ""
-#endif
-
 #ifndef _MSC_VER
-
 #include <stdio.h>
 #include <unistd.h>
+
+#define NULDEV "/dev/null"
+#define FILE_EXT ""
 
 static void write_default_ver_command(char *restrict cmd, const usize ref_size, const Compiler compilers) {
     if (compilers.cpp_first) {
@@ -148,7 +145,7 @@ CompilerConfig* new_config(const char *project_name) {
     cfg_base->std = strdup_cross("clatest");
 
     #ifdef __clang__
-    cfg_base->link = "clang-cl.exe"
+    cfg_base->link = "clang-cl.exe";
 
     #else
     cfg_base->link = "link.exe";

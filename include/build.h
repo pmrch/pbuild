@@ -3,6 +3,12 @@
 
 #include "utils.h"
 
-int compile_code(const char *base_cmd, const char *cwd, const isize num_jobs);
+typedef struct {
+    char *command;
+    char *cmd_stdout;
+    char *cmd_stderr;
+} CompileTask;
+
+int compile_code(const char *base_cmd, const char *cwd, const usize num_jobs);
 
 #endif

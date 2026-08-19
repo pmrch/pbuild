@@ -1,5 +1,6 @@
 // Common imports
 #include <string.h>
+#include <stdlib.h>
 
 #include "log.h"
 #include "path.h"
@@ -27,7 +28,7 @@ static char* GetCwdWin(void) {
     char buf[PATH_MAX] = { 0 };
     
     if (GetCurrentDirectory(sizeof(buf), buf) == 0) {
-        LOG_ERROR("Failed to get current working directory!");
+        LOG_ERROR("%s", "Failed to get current working directory!");
         return NULL;
     }
 
@@ -53,7 +54,7 @@ static bool IsPathValidWin(const char *path) {
     bool isInDir = false;
     while (*ptr != '\0') {
         if (*ptr == '\\') {
-            isInDir = true;
+            isInDir = false;
             ++numBackslashes;
         }
 
@@ -173,20 +174,23 @@ char* get_basename(char *abs_path) {
         return NULL;
     }
 
-    #ifdef _MSC_VER
-        char *last_slash = strrchr(abs_path, '\\');
-    #else
-        char *last_slash = strrchr(abs_path, '/');
-        if (last_slash == NULL) {
-            last_slash = strrchr(abs_path, '\\'); // MinGW fallback
-        }
-    #endif
+    char *last_slash = strrchr(abs_path, (int)PATH_SEP[0]);
+    if (last_slash == NULL) {
+        last_slash = strrchr(abs_path, '\\'); // MinGW fallback
+    }
 
     if (last_slash == NULL) {
         LOG_WARN("%s", "Returning path instead of filename, failed to extract it!");
     }
 
     return last_slash ? strdup_cross(++last_slash) : strdup_cross(abs_path);
+}
+
+char **gather_source_files(const char *srcdir) {
+    const usize num_files = get_num_files(srcdir);
+    char **target = (char**)malloc(sizeof(char*) * num_files);
+
+    return target;
 }
 
 bool path_exists(const char* path) {
@@ -226,7 +230,7 @@ void join_path(char *restrict path, const char *restrict child) {
 
 i32 create_directory(const char *path) {
     #ifndef _MSC_VER
-    return mkdir(path, 0755);
+    return (mkdir(path, 0755) == 0 || errno == EEXIST) ? 0 : -1;
 
     #else
     return CreateDirectoryWin(path);
