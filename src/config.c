@@ -87,7 +87,9 @@ static LangStd* get_latest_std(const Compiler compilers) {
 }
 #endif
 
-static const char *detect_compiler(void) {
+// clang-format off
+static const char* detect_compiler(void) {
+// clang-format on
     #if defined(_MSC_VER) && defined(__clang__)
     return "clang-cl.exe";
 
@@ -119,7 +121,9 @@ void free_lang_std(LangStd *std) {
     free(std);
 }
 
+// clang-format off
 CompilerConfig* new_config(const char *project_name) {
+// clang-format on
     LOG_DEBUG("%s", "initializing CompilerConfig");
     CompilerConfig *cfg_base = (CompilerConfig*)malloc(sizeof(CompilerConfig));
     LOG_VERBOSE("Initializing CompilerConfig at <%p>", (void*)cfg_base);

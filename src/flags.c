@@ -184,6 +184,8 @@ static const char* get_linker(char *compiler) {
     return NULL;
 }
 
+
+
 Cflags* join_cflags(const CompilerOptions opts, const CompilerConfig cfg) {
     LOG_INFO("%s", "Running join_cflags");
 
@@ -225,7 +227,9 @@ Cflags* join_cflags(const CompilerOptions opts, const CompilerConfig cfg) {
     return cflags_final;
 }
 
+// clang-format off
 char* construct_ldflags(const CompilerOptions opts, const CompilerConfig cfg, char *compiler) {
+// clang-format on
     LOG_INFO("%s", "Running construct_ldflags");
     char ldflags[PATH_MAX] = { 0 };
     const usize dest_size = sizeof(ldflags);

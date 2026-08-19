@@ -57,7 +57,6 @@
 #define STRICT_FLAGS_CL MODERATE_FLAGS_CL " " \
     "/w14456 /w14457 /w14668 /w14061 /w14062 /w14244 /w14242 /w14018"
 
-
 typedef enum {
     COMPILER_GCC     = 0,
     COMPILER_CLANG   = 1,
@@ -73,17 +72,19 @@ typedef struct {
 
 typedef struct {
     CompilerType type;
-    const char *base;
-    const char *debug;
-    const char *release;
+    const char  *base;
+    const char  *debug;
+    const char  *release;
 } ToolchainFlags;
 
+// clang-format off
 Strictness validate_strictness(const char *level_str);
 Cflags* join_cflags(const CompilerOptions opts, const CompilerConfig cfg);
 
 const char* delegate_strictness_flags(const Strictness level, const CompilerType ctype);
 char* construct_ldflags(const CompilerOptions opts, const CompilerConfig cfg, char *compiler);
 char* get_compiler(const CompilerOptions opts, const CompilerConfig cfg);
+// clang-format on
 
 void free_cflags(Cflags *cflags);
 

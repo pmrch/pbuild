@@ -12,15 +12,15 @@
 // ===========================================
 // =      Convenient Type Definitions        =
 // ===========================================
-typedef uint8_t   u8;
-typedef uint16_t  u16;
-typedef uint32_t  u32;
+typedef uint8_t  u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
 
-typedef int32_t  i32;
-typedef int64_t  i64;
+typedef int32_t i32;
+typedef int64_t i64;
 
 typedef ptrdiff_t isize;
-typedef size_t usize;
+typedef size_t    usize;
 
 typedef enum {
     C   = 0,
@@ -33,7 +33,7 @@ typedef enum {
 } Config;
 
 typedef enum {
-    Static = 0,
+    Static  = 0,
     Dynamic = 1
 } LinkerMode;
 
@@ -48,24 +48,24 @@ typedef void (*Destructor)(void *);
 
 typedef struct {
     char **strings;
-    usize num_split;
+    usize  num_split;
 } SplitString;
 
 typedef struct {
     void       *obj;
     const char *name;
-    Destructor func;
+    Destructor  func;
 } ToFree;
 
 // ===========================================
 // =        Shared Macro Definitions         =
 // ===========================================
 #if defined(__clang__)
-    // ALL clang variants including clang-cl: (void*) cast
-    #define TO_FREE(obj, func) ((ToFree){ obj, #obj, func != NULL ? (Destructor)(void*)func : free})
+// ALL clang variants including clang-cl: (void*) cast
+#define TO_FREE(obj, func) ((ToFree){ obj, #obj, func != NULL ? (Destructor)(void*)func : free})
 #else
-    // gcc (any libc) + MSVC cl.exe: direct cast
-    #define TO_FREE(obj, func) ((ToFree){ obj, #obj, func != NULL ? (Destructor)func : free})
+// gcc (any libc) + MSVC cl.exe: direct cast
+#define TO_FREE(obj, func) ((ToFree){ obj, #obj, func != NULL ? (Destructor)func : free})
 #endif
 
 #define TO_DFREE(obj) ((ToFree){ obj, #obj, free })
@@ -90,7 +90,7 @@ typedef struct CpuFeatures {
     bool avx512f;
 } CpuFeatures;
 
-const char* get_best_isa(void);
+const char *get_best_isa(void);
 #endif
 
 // ===========================================
@@ -99,7 +99,14 @@ const char* get_best_isa(void);
 
 // Returns a newly allocated SplitString.
 // The caller owns the returned object and must call free_split().
+// clang-format off
 SplitString* split(const char *str, i32 chr);
+
+char* strdup_cross(const char *str);
+char** clone_string_array_mutable(const char **arr, usize num_elem);
+
+FILE* fopen_cross(const char *restrict path, const char *restrict mode);
+// clang-format on
 
 // Frees all heap-allocated strings of a heap-allocated buffer,
 // and the buffer itself
@@ -109,13 +116,8 @@ void free_mutable_cloned_string_array(char **arr);
 void normalize_whitespaces(char *restrict s);
 void to_lowercase(char *restrict str);
 void strip_quotes(char *restrict s);
-void free_split(SplitString* ss);
+void free_split(SplitString *ss);
 void cleanup_test();
-
-char* strdup_cross(const char *str);
-char** clone_string_array_mutable(const char **arr, usize num_elem);
-
-FILE* fopen_cross(const char *restrict path, const char *restrict mode);
 
 i32 create_test_file(void);
 i32 free_all_no_vargs(ToFree objects[], const usize count);

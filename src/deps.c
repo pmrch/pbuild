@@ -61,7 +61,9 @@ static bool is_mimalloc_available_win(const CompilerOptions opts) {
     return false;
 }
 
-static bool is_system_mimalloc_available_win(const CompilerOptions opts, const CompilerConfig cfg) {
+// clang-format off
+static bool is_system_mimalloc_available_win(const CompilerOptions opts, const CompilerConfig cfg, char *restrict flag, const usize flag_size) {
+// clang-format on
     char *compiler = get_compiler(opts, cfg);
     if (compiler == NULL) {
         LOG_ERROR("%s", "Can't detect system mimalloc due to missing compiler!");
@@ -114,7 +116,8 @@ static bool is_mimalloc_available_unix(const CompilerOptions opts) {
         }
 
         bool has_mimalloc = strstr(entry->d_name, "mimalloc") != NULL;
-        bool is_lib = strstr(entry->d_name, ".so") != NULL || strstr(entry->d_name, ".a") != NULL;
+        bool is_lib = ``;
+        
 
         if (has_mimalloc && is_lib) {
             closedir(dir);
@@ -154,7 +157,7 @@ static bool is_system_mimalloc_available_unix(const CompilerOptions opts, const 
             if (str_buf[0] == 0) {
                 snprintf(str_buf, sizeof(str_buf), "%s", buffer);
                 str_buf[strlen(str_buf) - 1] = '\0';
-                //LOG_DEBUG("Read the following from pkg-config: %s", str_buf);
+                LOG_DEBUG("Read the following from pkg-config: %s", str_buf);
 
                 return_code = true;
                 break;

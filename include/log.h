@@ -13,15 +13,15 @@
 #define LOG_LEVEL LOG_LEVEL_VERBOSE
 #endif
 
-#if defined(__clang__) || defined (_GNUC_)
-    #define PRINTF_LIKE(fmt_idx, arg_idx) __attribute__((format(printf, 6, 7)))
+#if defined(__clang__) || defined(_GNUC_)
+#define PRINTF_LIKE(fmt_idx, arg_idx) __attribute__((format(printf, 6, 7)))
 #else
-    #define PRINTF_LIKE(fmt_idx, arg_idx)
+#define PRINTF_LIKE(fmt_idx, arg_idx)
 #endif
 
 // Forward declaration of the internal worker function
-void log_internal(const char* level_str, const char* color, const char* file, int line, const char* func, const char* fmt, ...)
-PRINTF_LIKE(6, 7); 
+void log_internal(const char *level_str, const char *color, const char *file, int line, const char *func, const char *fmt, ...)
+    PRINTF_LIKE(6, 7);
 
 #if LOG_LEVEL <= LOG_LEVEL_VERBOSE
 #define LOG_VERBOSE(fmt, ...) log_internal("VERBOSE", "\x1b[35m", __FILE__, __LINE__, __func__, fmt __VA_OPT__(,) __VA_ARGS__) // NOLINT
@@ -52,7 +52,6 @@ PRINTF_LIKE(6, 7);
 #else
 #define LOG_ERROR(fmt, ...)
 #endif
-
 
 #if LOG_LEVEL == LOG_LEVEL_DEPLOYMENT
 #undef LOG_DEBUG

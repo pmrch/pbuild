@@ -1,36 +1,40 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <stdbool.h>
 #include "utils.h"
+#include <stdbool.h>
 
 #undef bool
 #define bool _Bool
 
 #define INVALID_COMPILER ((Compiler){ .cc=NULL, .cxx=NULL })
 
+// clang-format off
 typedef struct {
     const char *cc;
     const char *cxx;
     bool  cpp_first;
 } Compiler;
+// clang-format on
 
 typedef struct {
-    Compiler    compiler;
-    char        *mimalloc_lib_path; // Library search path for mimalloc (-L or /LIBPATH:)
-    Lang        lang;  
-    Config      config;
-    Strictness  strictness;
-    LinkerMode  linker_mode;
-    bool        lang_set;
-    bool        config_set;
-    bool        compiler_set;
-    bool        strictness_set;
-    bool        linker_mode_set;
-    bool        use_system_mimalloc;
+    Compiler   compiler;
+    char      *mimalloc_lib_path; // Library search path for mimalloc (-L or /LIBPATH:)
+    Lang       lang;
+    Config     config;
+    Strictness strictness;
+    LinkerMode linker_mode;
+    bool       lang_set;
+    bool       config_set;
+    bool       compiler_set;
+    bool       strictness_set;
+    bool       linker_mode_set;
+    bool       use_system_mimalloc;
 } CompilerOptions;
 
+// clang-format off
 CompilerOptions* parse_compiler_flags(const int argc, const char **argv);
 Compiler pair_compiler(const char *compiler);
+// clang-format on
 
 #endif
