@@ -76,7 +76,7 @@ static const ToolchainFlags FLAG_MATRIX[] = {
 };
 
 static char *get_cflags(const CompilerType ctype, const CompilerOptions opts) {
-    LOG_DEBUG("Got CompilerType <%d>", ctype);
+    LOG_DEBUG("Got CompilerType <%u>", ctype);
     if (ctype == UNKNOWN) { return NULL; }
 
     char cflags_temp[PATH_MAX / 2] = { 0 };
@@ -91,7 +91,7 @@ static char *get_cflags(const CompilerType ctype, const CompilerOptions opts) {
     for (usize i = 0; i < matrix_elems; i++) {
         if (FLAG_MATRIX[i].type == ctype) {
             populate_temp_cflags(cflags_temp, FLAG_MATRIX[i], sizeof(cflags_temp), opts);
-            LOG_DEBUG("Loop at %zuth index with ctype being <%i>", i, FLAG_MATRIX[i].type);
+            LOG_DEBUG("Loop at %zuth index with ctype being <%u>", i, FLAG_MATRIX[i].type);
             return strdup_cross(cflags_temp);
         }
     }
@@ -126,7 +126,7 @@ static CompilerType get_type(const char *compiler) {
 
 const char* delegate_strictness_flags(const Strictness level, const CompilerType ctype) {
     if (level == Strict) {
-        LOG_DEBUG("Entered branch level == Strict, ctype currently is <%d>", ctype);
+        LOG_DEBUG("Entered branch level == Strict, ctype currently is <%u>", ctype);
 
         if (ctype == COMPILER_CLANG) { return (STRICT_FLAGS_UNIX " " CLANG_ONLY_STRICT_FLAGS " " CLANG_UNREASONABLE_DISABLED_FLAGS); }
         if (ctype == COMPILER_GCC) { return (STRICT_FLAGS_UNIX " " GCC_ONLY_STRICT_FLAGS); }
@@ -208,7 +208,7 @@ Cflags* join_cflags(const CompilerOptions opts, const CompilerConfig cfg) {
     LOG_DEBUG("Got compiler <%s>", compiler);
     CompilerType compiler_type = get_type(compiler);
     snprintf(cflags, sizeof(cflags), "%s", compiler);
-    LOG_DEBUG("Derived compiler type <%d>", compiler_type);
+    LOG_DEBUG("Derived compiler type <%u>", compiler_type);
 
     if (cfg.std != NULL && *cfg.std != '\0') {
         char std_buf[15] = { 0 };

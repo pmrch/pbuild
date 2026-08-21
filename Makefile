@@ -22,7 +22,9 @@ STRICT_FLAGS_CLANG = -Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wold-styl
 	-Wno-disabled-macro-expansion -Wno-unknown-warning-option -Wno-unused-macros -Wno-keyword-macro
 
 # Combine with standard flags and optimization
-CFLAGS = -std=c23 $(STRICT_FLAGS_CLANG) -Iinclude -MMD -MP -DLOG_LEVEL=0 -O3 -march=native -flto -ffast-math
+OPTIMIZED = -O3 -march=native -flto -ffast-math
+POSIX = -D_DEFAULT_SOURCE
+CFLAGS = -std=c23 $(STRICT_FLAGS_CLANG) $(POSIX) -Iinclude -MMD -MP -DLOG_LEVEL=0 $(OPTIMIZED)
 
 # Linker flags (for libraries)
 LDFLAGS = -flto -static

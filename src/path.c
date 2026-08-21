@@ -99,6 +99,8 @@ static bool PathExistsWin(const char *path) {
 }
 
 #else
+
+#include <errno.h>
 #include <stdlib.h>
 #include <dirent.h>
 #include <unistd.h>
@@ -186,11 +188,39 @@ char* get_basename(char *abs_path) {
     return last_slash ? strdup_cross(++last_slash) : strdup_cross(abs_path);
 }
 
-char **gather_source_files(const char *srcdir) {
-    const usize num_files = get_num_files(srcdir);
-    char **target = (char**)malloc(sizeof(char*) * num_files);
+usize gather_source_files(const char *srcdir) {
+    char **target = (char**)malloc(sizeof(char*) * 32);
+    usize current_num = 0;
 
-    return target;
+    if (srcdir == NULL) {
+        LOG_ERROR("%s", "Source dir was NULL!");
+        return current_num;
+    }
+
+    if (!is_path_valid(srcdir) || !path_exists(srcdir)) { 
+        LOG_DEBUG("%s", "Can't get number of files, source dir was invalid or missing");
+        return current_num; 
+    }
+
+    DIR *dir = opendir(srcdir);
+    if (dir == NULL) {
+        LOG_ERROR("Couldn't open the directory at <%s>", srcdir);
+        return current_num;
+    }
+
+    struct dirent *entry = NULL;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            LOG_DEBUG("Skipping reading <%s>", entry->d_name);
+            continue;
+        }
+
+        if (entry->d_type == DT_REG) {
+            
+        }
+    }
+
+    return current_num;
 }
 
 bool path_exists(const char* path) {

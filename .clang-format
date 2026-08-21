@@ -1,5 +1,5 @@
 # Pointer formatting
-PointerAlignment : Right
+PointerAlignment: Right
 
 # Indentation
 IndentWidth: 4

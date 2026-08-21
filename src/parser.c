@@ -134,7 +134,7 @@ static void set_linker_mode(char *restrict mode, CompilerOptions *opts) {
         opts->linker_mode = Static;
     }
 
-    printf("Got the following --linker-mode setting: <%s>, and setting is <%d>\n", mode, opts->linker_mode);
+    printf("Got the following --linker-mode setting: <%s>, and setting is <%u>\n", mode, opts->linker_mode);
     opts->linker_mode_set = true;
 }
 

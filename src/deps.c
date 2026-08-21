@@ -109,15 +109,19 @@ static bool is_mimalloc_available_unix(const CompilerOptions opts) {
             continue;
         }
 
-        const char *base = strchr(entry->d_name, '.');
-        if (base == NULL) {
+        if (strchr(entry->d_name, '.') == NULL) {
             //LOG_DEBUG("Directory <%s/%s> had no basename or extension", opts->mimalloc_lib_path, entry->d_name);
             continue;
         }
 
         bool has_mimalloc = strstr(entry->d_name, "mimalloc") != NULL;
-        bool is_lib = ``;
-        
+        const char *dyn_ext = strstr(entry->d_name, ".so");
+        const char *static_ext = strstr(entry->d_name, ".a");
+
+        if (dyn_ext != NULL) { dyn_ext += 3; }
+        bool is_lib = (opts.linker_mode_set && opts.linker_mode == Static) 
+            ? dyn_ext != NULL && (*dyn_ext == '\0' || *dyn_ext == '.')
+            : static_ext != NULL;
 
         if (has_mimalloc && is_lib) {
             closedir(dir);

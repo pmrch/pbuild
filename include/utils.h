@@ -22,6 +22,9 @@ typedef int64_t i64;
 typedef ptrdiff_t isize;
 typedef size_t    usize;
 
+#undef bool
+#define bool _Bool
+
 typedef enum {
     C   = 0,
     Cpp = 1,
@@ -56,6 +59,13 @@ typedef struct {
     const char *name;
     Destructor  func;
 } ToFree;
+
+typedef struct {
+    char **data;
+    usize  len;
+    usize  cap;
+    bool   freed;
+} DynStrArr;
 
 // ===========================================
 // =        Shared Macro Definitions         =
@@ -97,9 +107,13 @@ const char *get_best_isa(void);
 // =        General Shared Utility           =
 // ===========================================
 
+// clang-format off
+// Dynamic array utils
+DynStrArr* new_str_vec();
+i32 str_vec_push(DynStrArr *restrict arr, const char *elem);
+
 // Returns a newly allocated SplitString.
 // The caller owns the returned object and must call free_split().
-// clang-format off
 SplitString* split(const char *str, i32 chr);
 
 char* strdup_cross(const char *str);

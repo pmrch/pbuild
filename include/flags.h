@@ -58,11 +58,11 @@
     "/w14456 /w14457 /w14668 /w14061 /w14062 /w14244 /w14242 /w14018"
 
 typedef enum {
-    COMPILER_GCC     = 0,
-    COMPILER_CLANG   = 1,
-    COMPILER_CLANGCL = 2,
-    COMPILER_CL      = 3,
-    UNKNOWN          = 4
+    COMPILER_GCC     = (unsigned int)0,
+    COMPILER_CLANG   = (unsigned int)1,
+    COMPILER_CLANGCL = (unsigned int)2,
+    COMPILER_CL      = (unsigned int)3,
+    UNKNOWN          = (unsigned int)4
 } CompilerType;
 
 typedef struct {

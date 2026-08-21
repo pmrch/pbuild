@@ -1,3 +1,7 @@
+CompileFlags:
+    Add:
+      - -D_DEFAULT_SOURCE
+
 Diagnostics:
   Suppress:
     - empty-translation-unit
