@@ -1,8 +1,5 @@
 // Common imports
-<<<<<<< HEAD
-=======
 #include <stdio.h>
->>>>>>> 3329d2c (Started thread pool)
 #include <string.h>
 #include <stdlib.h>
 

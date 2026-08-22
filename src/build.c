@@ -149,11 +149,6 @@ static void *compile_one_win(void *const args)  {
 
 #endif
 
-<<<<<<< HEAD
-static i32 compile_one(const char *const argv[], const char *cwd) {
-    
-}*/
-=======
 void *compile_one(void *const args) {
     #ifndef _MSC_VER
     return compile_one_unix(args);
@@ -163,7 +158,6 @@ void *compile_one(void *const args) {
 
     #endif
 }
->>>>>>> 3329d2c (Started thread pool)
 
 static i32 prepare_build(char *restrict path, const usize buf_size, const char *cwd) {
     snprintf(path, buf_size, "%s", cwd);
@@ -182,22 +176,13 @@ static i32 prepare_build(char *restrict path, const usize buf_size, const char *
     return 0;
 }
 
-<<<<<<< HEAD
-int compile_code(const char *base_cmd, const char *cwd, const usize num_jobs) {
-=======
 i32 compile_code(const char *base_cmd, const char *cwd, const usize num_jobs) {
->>>>>>> 3329d2c (Started thread pool)
     if (base_cmd == NULL || cwd == NULL) {
         LOG_ERROR("%s", "Can't compile code, no cwd or base command was provided!");
         return -1;
     }
 
     char path_buf[PATH_MAX] = { 0 };
-<<<<<<< HEAD
-    i32 prepared_dest = prepare_build(path_buf, sizeof(path_buf), cwd);
-    if (prepared_dest != 0) { return prepared_dest; }
-
-=======
     DynStrArr *target = new_str_vec();
     if (target == NULL) { return -1; }
 
@@ -221,13 +206,10 @@ i32 compile_code(const char *base_cmd, const char *cwd, const usize num_jobs) {
     #endif
 
     free_str_vec(target);
->>>>>>> 3329d2c (Started thread pool)
     (void)num_jobs;
 
     return 0;
 }
-<<<<<<< HEAD
-=======
 
 ThreadPool *create_thread_pool(usize poolsize) {
     ThreadPool *tpool = (ThreadPool *)malloc(sizeof(ThreadPool));
@@ -268,4 +250,3 @@ void fill_compile_args(CompileArgs *args, mutex *mut, u16 thread_id) {
     args->lock = mut;
     args->thread_id = thread_id;
 }
->>>>>>> 3329d2c (Started thread pool)
