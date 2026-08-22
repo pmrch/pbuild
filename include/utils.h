@@ -10,6 +10,21 @@
 #include <stdio.h>
 
 // ===========================================
+<<<<<<< HEAD
+=======
+// =        Specific Included Headers        =
+// ===========================================
+#ifdef _MSC_VER
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
+#else
+#include <unistd.h>
+
+#endif
+
+// ===========================================
+>>>>>>> 3329d2c (Started thread pool)
 // =      Convenient Type Definitions        =
 // ===========================================
 typedef uint8_t  u8;
@@ -110,6 +125,12 @@ const char *get_best_isa(void);
 // clang-format off
 // Dynamic array utils
 DynStrArr* new_str_vec();
+<<<<<<< HEAD
+=======
+void free_str_vec(DynStrArr *arr);
+
+// If elem was heap allocated, you have free it after function call
+>>>>>>> 3329d2c (Started thread pool)
 i32 str_vec_push(DynStrArr *restrict arr, const char *elem);
 
 // Returns a newly allocated SplitString.

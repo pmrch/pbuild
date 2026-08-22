@@ -18,7 +18,7 @@ char* get_cwd(void);
 
 // Returned buffer is strdup()'d, caller must free() it
 char* get_basename(char *abs_path);
-usize gather_source_files(const char *srcdir);
+i32 gather_source_files(DynStrArr *target, const char *srcdir);
 // clang-format on
 
 bool path_exists(const char *path);

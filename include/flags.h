@@ -17,7 +17,7 @@
 // ======================================================
 // =        General Clang/GCC strictness flags          =
 // ======================================================
-#define CFLAGS_BASE_UNIX "-Iinclude -MMD -MP"
+#define CFLAGS_BASE_UNIX "-Iinclude -MMD -MP -D_DEFAULT_SOURCE"
 #define DEBUG_FLAGS_CC_UNIX "-O0 -g -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined"
 #define DEBUG_FLAGS_LNK_UNIX "-fsanitize=address -fsanitize=undefined"
 

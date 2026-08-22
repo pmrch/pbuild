@@ -1,4 +1,8 @@
 // Common imports
+<<<<<<< HEAD
+=======
+#include <stdio.h>
+>>>>>>> 3329d2c (Started thread pool)
 #include <string.h>
 #include <stdlib.h>
 
@@ -155,6 +159,82 @@ static bool path_exists_unix(const char *path) {
     return true;
 }
 
+static bool is_file_unix(struct dirent *entry, const char *path) {
+    if (entry == NULL) {
+        LOG_WARN("%s", "Failed to check file-ness, entry was NULL!");
+        return false;
+    }
+
+    struct stat st;
+    if (entry->d_type == DT_UNKNOWN) {
+        i32 result = stat(path, &st);
+        if (result != 0) { return false; }
+    }
+
+    if (entry->d_type == DT_REG) { return true; }
+    return S_ISREG(st.st_mode);
+}
+
+static bool is_dir_unix(struct dirent *entry, const char *path) {
+    if (entry == NULL) {
+        LOG_WARN("%s", "Failed to check file-ness, entry was NULL!");
+        return false;
+    }
+
+    struct stat st;
+    if (entry->d_type == DT_UNKNOWN) {
+        i32 result = stat(path, &st);
+        if (result != 0) { return false; }
+    }
+
+    if (entry->d_type == DT_DIR) { return true; }
+    return S_ISDIR(st.st_mode);
+}
+
+static i32 gather_files_unix(DynStrArr *target, const char *srcdir) {
+    DIR *dir = opendir(srcdir);
+    if (dir == NULL) {
+        LOG_ERROR("Couldn't open the directory at <%s>", srcdir);
+        return -1;
+    }
+
+    DynStrArr *filevec = new_str_vec();
+    if (filevec == NULL) { return -1; }
+
+    struct dirent *entry = NULL;
+    char path[PATH_MAX] = { 0 };
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            //LOG_DEBUG("Skipping reading <%s>", entry->d_name);
+            continue;
+        }
+
+        snprintf(path, sizeof(path), "%s", srcdir);
+        join_path(path, entry->d_name);    
+
+        if (is_file_unix(entry, srcdir)) {
+            str_vec_push(target, path);
+            continue;
+        }
+
+        if (is_dir_unix(entry, srcdir)) {
+            str_vec_push(filevec, path);
+            continue;
+        }
+    }
+
+    closedir(dir);
+    dir = NULL;
+
+    for (usize i = 0; i < filevec->len; i++) {
+        gather_files_unix(target, filevec->data[i]);
+    }
+
+    free_str_vec(filevec);
+    return 0;
+}
+
 #endif
 
 // Returned buffer is malloc()'d by the platform's compatible getcwd(),
@@ -188,39 +268,30 @@ char* get_basename(char *abs_path) {
     return last_slash ? strdup_cross(++last_slash) : strdup_cross(abs_path);
 }
 
-usize gather_source_files(const char *srcdir) {
-    char **target = (char**)malloc(sizeof(char*) * 32);
-    usize current_num = 0;
-
+i32 gather_source_files(DynStrArr *target, const char *srcdir) {
     if (srcdir == NULL) {
         LOG_ERROR("%s", "Source dir was NULL!");
-        return current_num;
+        return -1;
     }
 
     if (!is_path_valid(srcdir) || !path_exists(srcdir)) { 
         LOG_DEBUG("%s", "Can't get number of files, source dir was invalid or missing");
-        return current_num; 
+        return -1; 
     }
 
-    DIR *dir = opendir(srcdir);
-    if (dir == NULL) {
-        LOG_ERROR("Couldn't open the directory at <%s>", srcdir);
-        return current_num;
+    #ifndef _MSC_VER
+    i32 gathered = gather_files_unix(target, srcdir);
+    #else
+    i32 gathered = gather_files_win(target, srcdir);
+    #endif
+
+
+    if (gathered != 0) { 
+        LOG_ERROR("%s", "Failed to gather files!");
+        return -1; 
     }
 
-    struct dirent *entry = NULL;
-    while ((entry = readdir(dir)) != NULL) {
-        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
-            LOG_DEBUG("Skipping reading <%s>", entry->d_name);
-            continue;
-        }
-
-        if (entry->d_type == DT_REG) {
-            
-        }
-    }
-
-    return current_num;
+    return 0;
 }
 
 bool path_exists(const char* path) {

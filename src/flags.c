@@ -262,7 +262,7 @@ char* construct_ldflags(const CompilerOptions opts, const CompilerConfig cfg, ch
     if (opts.use_system_mimalloc) {
         char mimalloc_ldflag[256] = { 0 };
 
-        if(is_system_mimalloc_available(opts, cfg, mimalloc_ldflag, sizeof(mimalloc_ldflag))) {
+        if (is_system_mimalloc_available(opts, cfg, mimalloc_ldflag, sizeof(mimalloc_ldflag))) {
             strcat_with_space(ldflags, dest_size, mimalloc_ldflag);
         } else {
             LOG_WARN("%s", "Failed to detect system mimalloc");

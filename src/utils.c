@@ -94,23 +94,26 @@ SplitString* split(const char *str, i32 chr) {
         // Gets the first occurance of the delimiter in the string
         // For example in <libsobium.so.2.1>, points at first dot, leaves <.so.2.1>
         // here pointer delim is <libsobium> away from the start
-        const char *delim = strchr(ptr, chr);
-        if (delim != NULL) {
-            usize token_len = (usize)(delim - ptr);
-            char *token = (char*)malloc(token_len + 1);
-
-            if (token == NULL) {
-                LOG_ERROR("%s", "Failed to allocate memory for the base filename!");
-                free(ss);
-                return NULL;
-            }
-
-            memcpy(token, ptr, token_len);
-            token[token_len] = '\0';
-
-            ss->strings[ss->num_split] = token;
-            ptr = (delim + 1);
+        const char *delim = strchr(ptr, chr); 
+        if (delim == NULL) {
+            ss->strings[ss->num_split++] = strdup_cross(ptr);
+            break;
         }
+
+        usize token_len = (usize)(delim - ptr);
+        char *token = (char*)malloc(token_len + 1);
+
+        if (token == NULL) {
+            LOG_ERROR("%s", "Failed to allocate memory for the base filename!");
+            FREE_ALL(TO_FREE(ss, free_split), TO_DFREE(ss));
+            return NULL;
+        }
+
+        memcpy(token, ptr, token_len);
+        token[token_len] = '\0';
+
+        ss->strings[ss->num_split++] = token;
+        ptr = (delim + 1);
     }
 
     return ss;

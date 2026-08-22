@@ -95,6 +95,8 @@ i32 main(i32 argc, const char **argv) {
     normalize_whitespaces(linker_flags);
     //LOG_INFO("Base linker command: %s", linker_flags);
 
+    compile_code(compilation_flags->flags, cwd, 1);
+
     FREE_ALL(
         TO_DFREE(linker_flags), TO_FREE(compilation_flags, free_cflags), TO_DFREE(opts->mimalloc_lib_path), TO_DFREE(opts),
         TO_DFREE(cwd), TO_FREE(cfg, free_compiler_config),

@@ -149,7 +149,10 @@ static bool is_system_mimalloc_available_unix(const CompilerOptions opts, const 
 
     bool return_code = false;
     bool pkgconf_works = system("pkg-config --version > /dev/null 2>&1") == 0;
-    if (!pkgconf_works) { return false; }
+    if (!pkgconf_works) { 
+        free(compiler);
+        return false; 
+    }
 
     FILE *stream = NULL;
     char buffer[64] = { 0 };
@@ -171,6 +174,7 @@ static bool is_system_mimalloc_available_unix(const CompilerOptions opts, const 
         pclose(stream);
     }
 
+    free(compiler);
     if (return_code) { snprintf(flag, flag_size, "%s", str_buf);}
     return return_code;
 }

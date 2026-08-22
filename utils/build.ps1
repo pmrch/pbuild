@@ -7,7 +7,11 @@ $PSStyle.OutputRendering = 'ANSI'
 [string] $cLinker = "clang-cl.exe"
 [string] $cTarget = "pbuild"
 
+<<<<<<< HEAD
 [string] $mimallocLib = "D:\devTools\vcpkg\installed\x64-windows-static\lib"
+=======
+[string] $mimallocLib = "$env:VCPKG_ROOT\installed\x64-windows-static\lib"
+>>>>>>> 3329d2c (Started thread pool)
 [string] $cIncludes = "/Iinclude"
 [string] $cOptimization = "/Gy /fp:fast /clang:-O3 /clang:-march=native"
 [string] $cWinVer = "/D_WIN32_WINNT=0x0A00"
@@ -114,5 +118,10 @@ function LinkObjs {
 }
 
 [int] $logLvl = if ($args.Count -gt 0) { $args[0] } else { 1 }
+<<<<<<< HEAD
+=======
+[string] $linkerMode = if ($args.Count -gt 1) { $args[1] } else { "static" }
+
+>>>>>>> 3329d2c (Started thread pool)
 Compile($logLvl)
 LinkObjs

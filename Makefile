@@ -1,5 +1,5 @@
 # Compiler choice
-CC = clang
+CC = gcc
 
 # Strict Flag Collection
 # -Werror: Turn warnings into errors
@@ -23,11 +23,12 @@ STRICT_FLAGS_CLANG = -Wall -Wextra -Wpedantic -Werror -Wuninitialized -Wold-styl
 
 # Combine with standard flags and optimization
 OPTIMIZED = -O3 -march=native -flto -ffast-math
+DEBUG = -fsanitize=address -O0 -g
 POSIX = -D_DEFAULT_SOURCE
-CFLAGS = -std=c23 $(STRICT_FLAGS_CLANG) $(POSIX) -Iinclude -MMD -MP -DLOG_LEVEL=0 $(OPTIMIZED)
+CFLAGS = -std=c23 $(STRICT_FLAGS_GCC) $(POSIX) -Iinclude -MMD -MP -DLOG_LEVEL=5 $(OPTIMZIED)
 
 # Linker flags (for libraries)
-LDFLAGS = -flto -static
+LDFLAGS = -fsanitize=address
 
 # Target definition
 SRC := $(shell find src -name '*.c')
